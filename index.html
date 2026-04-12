@@ -788,6 +788,27 @@
             };
             reader.readAsDataURL(file);
         }
+
+        // 优先从远程加载数据
+async function loadRemoteData() {
+    try {
+        const response = await fetch('./mori_data.json');
+        const remoteData = await response.json();
+        Object.assign(appData, remoteData);
+        if (remoteData.regionPosts) regionPosts = remoteData.regionPosts;
+        if (remoteData.groupPosts) groupPosts = remoteData.groupPosts;
+        if (remoteData.nextId) nextId = remoteData.nextId;
+        if (!appData.relationships) appData.relationships = [];
+        if (!appData.playItems) appData.playItems = [];
+        appData.characters.forEach(c => { if (!c.gallery) c.gallery = []; });
+        if (!appData.nodePositions) appData.nodePositions = {};
+        syncNodePositionsFromChars();
+        renderAll();
+    } catch(e) {
+        // 如果远程数据加载失败（比如离线），就回退到本地 localStorage
+        loadFromLocal();
+    }
+}
         
         function loadFromLocal() {
             const raw = localStorage.getItem('MoriData');
@@ -1391,7 +1412,7 @@
             input.click();
         });
 
-        loadFromLocal();
+        loadRemoteData();
         isAuthorMode = false;
         updateModeUI();
         document.getElementById('lightboxModal').addEventListener('click', function(e) { if(e.target === this) this.style.display = 'none'; });
