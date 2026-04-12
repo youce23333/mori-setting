@@ -672,22 +672,48 @@
             renderAll();
         }
         
-        function promptAuthorLogin() {
-            if (isAuthorMode) {
-                isAuthorMode = false;
-                updateModeUI();
-                return;
-            }
-            const pwd = prompt("🔐 请输入作者密码：");
-            if (pwd === null) return;
-            if (pwd === AUTHOR_PASSWORD) {
-                isAuthorMode = true;
-                updateModeUI();
-                setTimeout(() => { if (document.getElementById('relationPage').classList.contains('active-page')) drawRelations(); }, 30);
-            } else {
-                alert("❌ 密码错误");
-            }
+       function promptAuthorLogin() {
+    if (isAuthorMode) {
+        isAuthorMode = false;
+        updateModeUI();
+        return;
+    }
+    
+    // 创建自定义密码输入框
+    const modalContent = document.getElementById('modalContent');
+    modalContent.innerHTML = `
+        <h3>🔐 输入作者密码</h3>
+        <input type="password" id="pwdInput" placeholder="请输入密码" style="width:100%; padding:12px; border-radius:20px; border:1px solid #cde0be; margin:16px 0; font-size:16px;">
+        <div style="display:flex; gap:10px;">
+            <button class="btn-primary" id="confirmPwdBtn" style="flex:1;">确认</button>
+            <button class="btn-primary" id="cancelPwdBtn" style="flex:1; background:#aaa;">取消</button>
+        </div>
+    `;
+    openModal();
+    
+    document.getElementById('confirmPwdBtn').onclick = () => {
+        const pwd = document.getElementById('pwdInput').value;
+        closeModal();
+        if (pwd === AUTHOR_PASSWORD) {
+            isAuthorMode = true;
+            updateModeUI();
+            setTimeout(() => { if (document.getElementById('relationPage').classList.contains('active-page')) drawRelations(); }, 30);
+        } else {
+            alert("❌ 密码错误，保持游客模式");
         }
+    };
+    
+    document.getElementById('cancelPwdBtn').onclick = () => {
+        closeModal();
+    };
+    
+    // 按回车键确认
+    document.getElementById('pwdInput').addEventListener('keypress', (e) => {
+        if(e.key === 'Enter') {
+            document.getElementById('confirmPwdBtn').click();
+        }
+    });
+}
         
         document.getElementById('modeToggleBtn').addEventListener('click', promptAuthorLogin);
         
