@@ -678,7 +678,7 @@
                 updateModeUI();
                 return;
             }
-            const pwd = prompt("🔐 请输入作者密码 (默认: mori2024)：");
+            const pwd = prompt("🔐 请输入作者密码：");
             if (pwd === null) return;
             if (pwd === AUTHOR_PASSWORD) {
                 isAuthorMode = true;
