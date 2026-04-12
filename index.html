@@ -1,0 +1,1321 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0, user-scalable=no, maximum-scale=1.0, viewport-fit=cover">
+    <title>秘林之息 · 设定集</title>
+    <!-- Font Awesome 6 -->
+    <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.0.0-beta3/css/all.min.css">
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+            font-family: 'Segoe UI', 'Inter', system-ui, -apple-system, sans-serif;
+        }
+
+        body {
+            background: #eef5e8;
+            color: #1e2f1c;
+        }
+
+        :root {
+            --primary-green: #3b8b3a;
+            --light-green: #e2f0da;
+            --card-bg: #ffffffdd;
+            --shadow: 0 10px 25px -5px rgba(0, 0, 0, 0.05), 0 8px 10px -6px rgba(0, 0, 0, 0.02);
+            --border-radius: 24px;
+            --accent: #2c6e2c;
+        }
+
+        .navbar {
+            background: white;
+            backdrop-filter: blur(10px);
+            border-bottom: 1px solid #cde2c1;
+            padding: 0.8rem 1rem;
+            position: sticky;
+            top: 0;
+            z-index: 100;
+            display: flex;
+            gap: 0.8rem;
+            box-shadow: 0 2px 10px rgba(0,0,0,0.02);
+            flex-wrap: wrap;
+            align-items: center;
+        }
+        .nav-btn {
+            font-size: 1rem;
+            font-weight: 600;
+            padding: 0.4rem 0.8rem;
+            background: transparent;
+            border: none;
+            cursor: pointer;
+            color: #3a5a34;
+            border-radius: 40px;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .nav-btn.active {
+            background: var(--primary-green);
+            color: white;
+            box-shadow: 0 2px 8px rgba(59,139,58,0.3);
+        }
+        .auth-area {
+            margin-left: auto;
+            display: flex;
+            align-items: center;
+            gap: 8px;
+        }
+        .mode-badge {
+            background: #e8f3e2;
+            border-radius: 40px;
+            padding: 4px 12px;
+            font-size: 0.8rem;
+            font-weight: 500;
+            display: flex;
+            align-items: center;
+            gap: 6px;
+            cursor: pointer;
+            border: 1px solid #b1d0a4;
+            transition: 0.2s;
+            white-space: nowrap;
+        }
+        .mode-badge i {
+            font-size: 0.9rem;
+        }
+        .mode-badge.author {
+            background: var(--primary-green);
+            color: white;
+            border-color: var(--primary-green);
+        }
+        .container {
+            max-width: 1400px;
+            margin: 1.5rem auto;
+            padding: 0 1rem;
+        }
+        @media (min-width: 640px) {
+            .navbar { padding: 0.8rem 2rem; gap: 1.5rem; }
+            .nav-btn { font-size: 1.2rem; padding: 0.5rem 1rem; }
+            .mode-badge { padding: 6px 16px; font-size: 0.9rem; }
+            .container { padding: 0 2rem; margin: 2rem auto; }
+        }
+
+        .page {
+            display: none;
+            animation: fade 0.2s ease;
+        }
+        .active-page {
+            display: block;
+        }
+        @keyframes fade {
+            from { opacity: 0; transform: translateY(6px);}
+            to { opacity: 1; transform: translateY(0);}
+        }
+
+        .card-grid {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 1.2rem;
+            margin-top: 1.5rem;
+        }
+        .card {
+            background: white;
+            border-radius: var(--border-radius);
+            box-shadow: var(--shadow);
+            overflow: hidden;
+            transition: transform 0.2s, box-shadow 0.2s;
+            width: 100%;
+            max-width: 300px;
+            border: 1px solid #d9e8cf;
+            display: flex;
+            flex-direction: column;
+        }
+        @media (min-width: 480px) {
+            .card { width: 280px; }
+        }
+        .card:hover {
+            transform: translateY(-4px);
+            box-shadow: 0 20px 30px -12px rgba(0,0,0,0.1);
+        }
+        .card-img {
+            width: 100%;
+            height: 160px;
+            object-fit: cover;
+            background: #e2f0da;
+        }
+        .card-content {
+            padding: 1rem;
+            flex: 1;
+        }
+        .card-title {
+            font-size: 1.2rem;
+            font-weight: 600;
+            margin-bottom: 0.5rem;
+            color: #2b5a28;
+        }
+        .card-desc {
+            font-size: 0.85rem;
+            color: #4a5e43;
+            margin-bottom: 0.8rem;
+            line-height: 1.4;
+        }
+        .card-tag {
+            display: inline-flex;
+            align-items: center;
+            gap: 6px;
+            background: var(--light-green);
+            border-radius: 20px;
+            padding: 4px 12px;
+            font-size: 0.7rem;
+            margin-bottom: 0.8rem;
+        }
+        .card-tag i {
+            font-size: 0.9rem;
+            line-height: 1;
+        }
+        .card-actions {
+            display: flex;
+            gap: 8px;
+            margin-top: 12px;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+        }
+        .btn-icon {
+            background: var(--light-green);
+            border: none;
+            border-radius: 40px;
+            padding: 6px 12px;
+            font-size: 0.8rem;
+            cursor: pointer;
+            transition: 0.1s;
+            color: #2b5e2a;
+            display: inline-flex;
+            align-items: center;
+            gap: 4px;
+        }
+        .btn-primary {
+            background: var(--primary-green);
+            color: white;
+            border: none;
+            border-radius: 60px;
+            padding: 8px 16px;
+            font-weight: 500;
+            cursor: pointer;
+            font-size: 0.9rem;
+        }
+        .slide-row {
+            display: flex;
+            overflow-x: auto;
+            gap: 0.8rem;
+            scrollbar-width: thin;
+            padding-bottom: 12px;
+        }
+        .slide-item {
+            flex: 0 0 auto;
+            width: 180px;
+            background: #f9fbf5;
+            border-radius: 20px;
+            overflow: hidden;
+            box-shadow: 0 2px 6px rgba(0,0,0,0.05);
+        }
+        .gallery-item {
+            flex: 0 0 160px;
+            background: white;
+            border-radius: 16px;
+            overflow: hidden;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.05);
+            border: 1px solid #d9e8cf;
+            cursor: pointer;
+        }
+        .gallery-item img {
+            width: 100%;
+            height: 110px;
+            object-fit: cover;
+        }
+        .gallery-item .gallery-title {
+            padding: 6px 8px;
+            font-size: 0.75rem;
+            font-weight: 500;
+            color: #2b5a28;
+            text-align: center;
+            background: #f4f9f0;
+        }
+        .modal {
+            display: none;
+            position: fixed;
+            top:0; left:0; width:100%; height:100%;
+            background: rgba(30,40,25,0.7);
+            backdrop-filter: blur(6px);
+            z-index: 1000;
+            justify-content: center;
+            align-items: center;
+        }
+        .modal-content {
+            background: white;
+            max-width: 700px;
+            width: 90%;
+            max-height: 85vh;
+            overflow-y: auto;
+            border-radius: 32px;
+            padding: 1.5rem;
+            box-shadow: 0 25px 40px rgba(0,0,0,0.2);
+        }
+        .lightbox-modal {
+            background: rgba(0,0,0,0.85);
+            backdrop-filter: blur(10px);
+        }
+        .lightbox-content {
+            max-width: 90vw;
+            max-height: 90vh;
+            background: transparent;
+            padding: 0;
+            display: flex;
+            justify-content: center;
+            align-items: center;
+        }
+        .lightbox-content img {
+            max-width: 100%;
+            max-height: 90vh;
+            border-radius: 16px;
+            box-shadow: 0 10px 30px rgba(0,0,0,0.5);
+        }
+        .relation-map {
+            position: relative;
+            background: #eef1e7;
+            min-height: 500px;
+            border-radius: 36px;
+            overflow: hidden;
+            border: 2px dashed #bdd8ae;
+            margin: 1rem 0;
+            touch-action: none;
+        }
+        .drag-node {
+            position: absolute;
+            width: 80px;
+            text-align: center;
+            cursor: grab;
+            user-select: none;
+            z-index: 20;
+            transition: 0.05s linear;
+            background: white;
+            border-radius: 60px;
+            padding: 6px 4px;
+            box-shadow: 0 4px 12px rgba(0,0,0,0.1);
+            touch-action: none;
+        }
+        .drag-node:active {
+            cursor: grabbing;
+        }
+        .drag-node img {
+            width: 52px;
+            height: 52px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 3px solid var(--primary-green);
+            pointer-events: none;
+            transition: border-color 0.2s;
+        }
+        .drag-node span {
+            display: block;
+            font-size: 0.7rem;
+            font-weight: 500;
+            margin-top: 4px;
+            pointer-events: none;
+        }
+        .scroll-x {
+            display: flex;
+            overflow-x: auto;
+            gap: 0.8rem;
+            padding: 0.6rem 0.2rem;
+        }
+        .post-preview {
+            flex: 0 0 180px;
+            background: white;
+            border-radius: 20px;
+            overflow: hidden;
+            cursor: pointer;
+            border: 1px solid #cfe2c2;
+            position: relative;
+        }
+        .post-preview img {
+            width: 100%;
+            height: 120px;
+            object-fit: cover;
+        }
+        .delete-post-btn {
+            position: absolute;
+            top: 6px;
+            right: 6px;
+            background: rgba(255,255,240,0.9);
+            border-radius: 30px;
+            padding: 4px 8px;
+            font-size: 0.7rem;
+            cursor: pointer;
+            z-index: 2;
+        }
+        .region-card, .group-card {
+            background: white;
+            border-radius: 28px;
+            padding: 1.2rem;
+            margin-bottom: 1.5rem;
+            box-shadow: var(--shadow);
+        }
+        hr {
+            margin: 1rem 0;
+            border-color: #d0e2c2;
+        }
+        h2, h3 {
+            color: #2b5a28;
+        }
+        .tag {
+            background: #e8f3e2;
+            border-radius: 30px;
+            padding: 4px 12px;
+            font-size: 0.75rem;
+        }
+        button {
+            background: none;
+            border: none;
+        }
+        i {
+            pointer-events: none;
+        }
+        .flex-between {
+            display: flex;
+            justify-content: space-between;
+            align-items: center;
+            flex-wrap: wrap;
+            gap: 8px;
+        }
+        .hero-area {
+            position: relative;
+            margin-bottom: 24px;
+            border-radius: 32px;
+            overflow: hidden;
+            background: #cbe2bc;
+            min-height: 200px;
+        }
+        .hero-img {
+            width: 100%;
+            height: 200px;
+            object-fit: cover;
+            display: block;
+        }
+        .hero-overlay {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            background: rgba(255,255,240,0.8);
+            border-radius: 30px;
+            padding: 6px 12px;
+            backdrop-filter: blur(4px);
+            cursor: pointer;
+            font-size: 0.8rem;
+        }
+        .hero-placeholder {
+            height: 200px;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            background: #cbe2bc;
+            cursor: pointer;
+        }
+        .relation-canvas {
+            position: absolute;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            pointer-events: none;
+            z-index: 15;
+        }
+        .page-title {
+            font-size: 1.8rem;
+            font-weight: 600;
+            margin-bottom: 1rem;
+            color: #2b5a28;
+            border-left: 5px solid var(--primary-green);
+            padding-left: 1rem;
+        }
+        .play-filter {
+            display: flex;
+            gap: 10px;
+            margin-bottom: 1.5rem;
+            flex-wrap: wrap;
+        }
+        .filter-chip {
+            background: #e8f0e2;
+            border-radius: 40px;
+            padding: 6px 16px;
+            cursor: pointer;
+            font-size: 0.9rem;
+            transition: 0.1s;
+        }
+        .filter-chip.active {
+            background: var(--primary-green);
+            color: white;
+        }
+
+        /* 游客模式隐藏作者控件 */
+        body.guest-mode .author-only,
+        body.guest-mode .hero-overlay,
+        body.guest-mode .delete-post-btn,
+        body.guest-mode .editRegion,
+        body.guest-mode .delRegion,
+        body.guest-mode .addResidentBtn,
+        body.guest-mode .newRegionPostBtn,
+        body.guest-mode .removeResi,
+        body.guest-mode .editGroup,
+        body.guest-mode .delGroup,
+        body.guest-mode .addMemberToGroup,
+        body.guest-mode .newGroupPostBtn,
+        body.guest-mode .removeMember,
+        body.guest-mode .edit-char,
+        body.guest-mode .del-char,
+        body.guest-mode #newCharacterBtn,
+        body.guest-mode #newRegionBtn,
+        body.guest-mode #newGroupBtn,
+        body.guest-mode #newPlayItemBtn,
+        body.guest-mode .edit-play,
+        body.guest-mode .del-play,
+        body.guest-mode #editRelationsBtn,
+        body.guest-mode #addHomeImageBtn,
+        body.guest-mode [data-remove-img] {
+            display: none !important;
+        }
+
+        .resident-item, .member-item {
+            display: inline-flex;
+            flex-direction: column;
+            align-items: center;
+            margin-right: 10px;
+            margin-bottom: 8px;
+            position: relative;
+        }
+        .resident-item img, .member-item img {
+            width: 44px;
+            height: 44px;
+            border-radius: 50%;
+            object-fit: cover;
+            border: 2px solid var(--primary-green);
+            background: #e2f0da;
+        }
+        .resident-item span, .member-item span {
+            font-size: 0.75rem;
+            margin-top: 4px;
+            max-width: 60px;
+            text-align: center;
+        }
+        .remove-btn {
+            position: absolute;
+            top: -6px;
+            right: -6px;
+            background: white;
+            border-radius: 50%;
+            padding: 2px 4px;
+            font-size: 12px;
+            box-shadow: 0 2px 4px rgba(0,0,0,0.1);
+            cursor: pointer;
+            border: 1px solid #ccc;
+        }
+
+        .gallery-manager-item {
+            display: flex;
+            align-items: center;
+            gap: 10px;
+            background: #f0f5ea;
+            border-radius: 16px;
+            padding: 8px;
+            margin-bottom: 8px;
+        }
+        .gallery-manager-item img {
+            width: 50px;
+            height: 50px;
+            border-radius: 12px;
+            object-fit: cover;
+        }
+        .post-image-preview {
+            display: flex;
+            flex-wrap: wrap;
+            gap: 8px;
+            margin: 8px 0;
+        }
+        .post-image-preview img {
+            width: 70px;
+            height: 70px;
+            object-fit: cover;
+            border-radius: 12px;
+            border: 1px solid #cde0be;
+        }
+        input, textarea, select {
+            font-size: 16px;
+        }
+    </style>
+</head>
+<body>
+<div class="navbar">
+    <button class="nav-btn active" data-page="home">🌿 首页</button>
+    <button class="nav-btn" data-page="world">🗺️ 世界</button>
+    <button class="nav-btn" data-page="relation">🕸️ 关系</button>
+    <button class="nav-btn" data-page="play">📦 产出</button>
+    <div class="auth-area">
+        <div id="modeToggleBtn" class="mode-badge">
+            <i class="fas fa-eye"></i> <span>游客模式</span>
+        </div>
+    </div>
+</div>
+<div class="container">
+    <div id="homePage" class="page active-page">
+        <div class="page-title">秘林之森</div>
+        <div class="hero-area" id="heroArea"></div>
+        <textarea id="homeDescInput" rows="3" placeholder="世界介绍..." style="width:100%; margin-top:12px; border-radius:20px; border:1px solid #cde0be; padding:12px;"></textarea>
+        <h3 style="margin-top: 24px;">✨ 映像集 <button class="btn-icon author-only" id="addHomeImageBtn"><i class="fas fa-plus"></i> 添加</button></h3>
+        <div id="homeGallery" class="slide-row" style="margin-bottom: 30px;"></div>
+        <div class="flex-between"><h2>📖 人设卡</h2><button class="btn-primary author-only" id="newCharacterBtn"><i class="fas fa-user-plus"></i> 新建</button></div>
+        <div id="characterList" class="card-grid"></div>
+    </div>
+    <div id="worldPage" class="page">
+        <div class="page-title">世界地图</div>
+        <button class="btn-primary author-only" id="newRegionBtn"><i class="fas fa-map-marker-alt"></i> 新建地域</button>
+        <div id="regionListContainer"></div>
+    </div>
+    <div id="relationPage" class="page">
+        <div class="page-title">角色关系</div>
+        <div class="edit-relation-btn author-only">
+            <button class="btn-primary" id="editRelationsBtn"><i class="fas fa-project-diagram"></i> 编辑关系</button>
+        </div>
+        <div id="globalRelationMap" class="relation-map" style="min-height: 500px; position: relative;"></div>
+        <div class="flex-between"><h3>🏷️ 团体卡</h3><button class="btn-primary author-only" id="newGroupBtn"><i class="fas fa-users"></i> 新建团体</button></div>
+        <div id="groupListContainer"></div>
+    </div>
+    <div id="playPage" class="page">
+        <div class="page-title">衍生创作</div>
+        <div class="play-filter">
+            <span class="filter-chip active" data-filter="all">全部</span>
+            <span class="filter-chip" data-filter="game">🎮 游戏</span>
+            <span class="filter-chip" data-filter="video">🎬 视频</span>
+        </div>
+        <div class="flex-between" style="margin-bottom: 1rem;">
+            <h3>📦 作品集</h3>
+            <button class="btn-primary author-only" id="newPlayItemBtn"><i class="fas fa-plus"></i> 添加作品</button>
+        </div>
+        <div id="playItemsGrid" class="card-grid"></div>
+    </div>
+</div>
+
+<div id="globalModal" class="modal"><div class="modal-content" id="modalContent"></div></div>
+<div id="lightboxModal" class="modal lightbox-modal" onclick="this.style.display='none'"><div class="lightbox-content"><img id="lightboxImg" src="" alt=""></div></div>
+
+<script>
+    (function(){
+        const AUTHOR_PASSWORD = "mori2024";
+        let isAuthorMode = false;
+        
+        // 团体配色 (柔和自然)
+        const GROUP_COLORS = [
+            '#3b8b3a', // 默认绿
+            '#8b7b8b', // 灰紫
+            '#6a9fb5', // 雾蓝
+            '#d4a373', // 杏色
+            '#b5838d', // 玫瑰粽
+            '#6d6875', // 岩灰
+            '#a3b18a', // 苔绿
+            '#e07a5f', // 陶土
+            '#81b29a', // 薄荷
+        ];
+        
+        function getGroupColor(groupId) {
+            if (!groupId) return GROUP_COLORS[0];
+            const index = (groupId * 31) % GROUP_COLORS.length;
+            return GROUP_COLORS[index] || GROUP_COLORS[0];
+        }
+        
+        // 获取角色所属的第一个团体ID（用于边框颜色）
+        function getCharPrimaryGroupId(charId) {
+            for (let group of appData.groups) {
+                if (group.members && group.members.includes(charId)) {
+                    return group.id;
+                }
+            }
+            return null;
+        }
+        
+        function updateModeUI() {
+            const badge = document.getElementById('modeToggleBtn');
+            const icon = badge.querySelector('i');
+            const span = badge.querySelector('span');
+            if (isAuthorMode) {
+                document.body.classList.remove('guest-mode');
+                badge.classList.add('author');
+                icon.className = 'fas fa-pen-fancy';
+                span.textContent = '作者模式';
+            } else {
+                document.body.classList.add('guest-mode');
+                badge.classList.remove('author');
+                icon.className = 'fas fa-eye';
+                span.textContent = '游客模式';
+            }
+            renderAll();
+        }
+        
+        function promptAuthorLogin() {
+            if (isAuthorMode) {
+                isAuthorMode = false;
+                updateModeUI();
+                return;
+            }
+            const pwd = prompt("🔐 请输入作者密码 (游客模式只读)：");
+            if (pwd === null) return;
+            if (pwd === AUTHOR_PASSWORD) {
+                isAuthorMode = true;
+                updateModeUI();
+                setTimeout(() => { if (document.getElementById('relationPage').classList.contains('active-page')) drawRelations(); }, 30);
+            } else {
+                alert("❌ 密码错误，保持游客模式");
+            }
+        }
+        
+        document.getElementById('modeToggleBtn').addEventListener('click', promptAuthorLogin);
+        
+        function requireAuthor() {
+            if (!isAuthorMode) {
+                alert("✨ 游客模式仅供浏览，请点击右上角「游客模式」输入密码解锁编辑。");
+                return false;
+            }
+            return true;
+        }
+        
+        const originalSave = function() {
+            if (!isAuthorMode) return;
+            localStorage.setItem('MoriData', JSON.stringify({
+                ...appData,
+                regionPosts, groupPosts, nextId
+            }));
+        };
+        
+        let appData = {
+            headerImg: "", homeDescription: "欢迎来到秘林之息，在这里编织属于你的幻想故事。", homeImages: [],
+            characters: [], regions: [], groups: [], nodePositions: {}, relationships: [], playItems: []
+        };
+        let regionPosts = {};
+        let groupPosts = {};
+        let nextId = { char:100, region:200, group:300, post:1000, play:400 };
+        let relationCanvas = null, relationCtx = null, currentPlayFilter = "all";
+
+        function fileToBase64(file) {
+            return new Promise((resolve, reject) => {
+                const reader = new FileReader();
+                reader.onload = () => resolve(reader.result);
+                reader.onerror = reject;
+                reader.readAsDataURL(file);
+            });
+        }
+        function triggerImageUpload(callback) {
+            if (!requireAuthor()) return;
+            const input = document.createElement('input');
+            input.type = 'file'; input.accept = 'image/*';
+            input.onchange = async (e) => {
+                const file = e.target.files[0];
+                if(file) { const base64 = await fileToBase64(file); callback(base64); }
+            };
+            input.click();
+        }
+        function triggerMultiImageUpload(callback) {
+            if (!requireAuthor()) return;
+            const input = document.createElement('input');
+            input.type = 'file'; input.accept = 'image/*'; input.multiple = true;
+            input.onchange = async (e) => {
+                const files = Array.from(e.target.files);
+                const base64Array = await Promise.all(files.map(f => fileToBase64(f)));
+                callback(base64Array);
+            };
+            input.click();
+        }
+
+        function saveToLocal() { originalSave(); }
+        
+        function loadFromLocal() {
+            const raw = localStorage.getItem('MoriData');
+            if(raw) {
+                try {
+                    const data = JSON.parse(raw);
+                    Object.assign(appData, data);
+                    if(data.regionPosts) regionPosts = data.regionPosts;
+                    if(data.groupPosts) groupPosts = data.groupPosts;
+                    if(data.nextId) nextId = data.nextId;
+                    if(!appData.relationships) appData.relationships = [];
+                    if(!appData.playItems) appData.playItems = [];
+                } catch(e) {}
+            } else {
+                appData.characters = [
+                    { id: 1, name: "艾琳", avatar: "https://picsum.photos/id/64/100/100", job: "守林人", region: "苍翠林地", standee: "https://picsum.photos/id/15/200/300", backstory: "自幼与森林对话，守护秘境。", gallery: [
+                        { imageUrl: "https://picsum.photos/id/104/200/150", title: "林间小屋" },
+                        { imageUrl: "https://picsum.photos/id/28/200/150", title: "她的弓箭" }
+                    ]},
+                    { id: 2, name: "洛根", avatar: "https://picsum.photos/id/26/100/100", job: "巡夜者", region: "迷雾沼泽", standee: "https://picsum.photos/id/22/200/300", backstory: "沉默的守护者，身世成谜。", gallery: [] }
+                ];
+                appData.regions = [{ id: 201, name: "苍翠林地", cover: "https://picsum.photos/id/104/300/200", description: "古老巨树环绕的圣所", residents: [1] }];
+                appData.groups = [{ id: 301, name: "翠影守卫", description: "守护秘林的精英团", members: [1,2], coverImg: "https://picsum.photos/id/96/300/200" }];
+                regionPosts[201] = [{ id: 1001, coverImg: "https://picsum.photos/id/95/200/150", title: "林间小径", content: "今日在林地发现闪光苔藓。", images: ["https://picsum.photos/id/29/200/150"] }];
+                groupPosts[301] = [];
+                appData.homeImages = ["https://picsum.photos/id/20/300/200", "https://picsum.photos/id/30/300/200"];
+                appData.relationships = [{ from: 1, to: 2, relation: "盟友 · 共同守护森林" }];
+                appData.playItems = [
+                    { id: 401, type: "game", title: "秘林迷踪", description: "帮助艾琳寻找失落的森林信物，轻量解谜游戏。", imageUrl: "https://picsum.photos/id/104/300/200", linkUrl: "https://example.com/game1" },
+                    { id: 402, type: "video", title: "森林低语·短片", description: "一段关于秘林守护者的手绘动画。", imageUrl: "https://picsum.photos/id/96/300/200", linkUrl: "https://example.com/video1" }
+                ];
+                nextId = { char:3, region:202, group:302, post:1002, play:403 };
+            }
+            appData.characters.forEach(c => { if (!c.gallery) c.gallery = []; });
+            if(!appData.nodePositions) appData.nodePositions = {};
+            syncNodePositionsFromChars();
+            renderAll();
+        }
+
+        function syncNodePositionsFromChars() {
+            appData.characters.forEach(c => {
+                if(!appData.nodePositions[c.id]) appData.nodePositions[c.id] = { x: 80 + Math.random() * 400, y: 80 + Math.random() * 300 };
+            });
+        }
+
+        function drawRelations() {
+            if(!relationCanvas || !relationCtx) return;
+            const mapDiv = document.getElementById('globalRelationMap');
+            if(!mapDiv) return;
+            const rect = mapDiv.getBoundingClientRect();
+            if(rect.width === 0) return;
+            relationCanvas.width = rect.width; relationCanvas.height = rect.height;
+            relationCtx.clearRect(0, 0, rect.width, rect.height);
+            if(!appData.relationships.length) return;
+            const nodes = document.querySelectorAll('#globalRelationMap .drag-node');
+            const nodeMap = new Map();
+            nodes.forEach(node => {
+                const id = parseInt(node.getAttribute('data-charid'));
+                const left = parseFloat(node.style.left), top = parseFloat(node.style.top);
+                if(!isNaN(left) && !isNaN(top)) nodeMap.set(id, { x: left + 40, y: top + 35 });
+            });
+            appData.relationships.forEach(rel => {
+                const fromPos = nodeMap.get(rel.from), toPos = nodeMap.get(rel.to);
+                if(fromPos && toPos) {
+                    relationCtx.beginPath(); relationCtx.moveTo(fromPos.x, fromPos.y); relationCtx.lineTo(toPos.x, toPos.y);
+                    relationCtx.strokeStyle = '#5a8f4c'; relationCtx.lineWidth = 2.5; relationCtx.setLineDash([6, 8]);
+                    relationCtx.stroke(); relationCtx.setLineDash([]);
+                    relationCtx.fillStyle = '#3b8b3a';
+                    relationCtx.beginPath(); relationCtx.arc(fromPos.x, fromPos.y, 4, 0, 2*Math.PI); relationCtx.fill();
+                    relationCtx.beginPath(); relationCtx.arc(toPos.x, toPos.y, 4, 0, 2*Math.PI); relationCtx.fill();
+                    const midX = (fromPos.x + toPos.x)/2, midY = (fromPos.y + toPos.y)/2;
+                    relationCtx.font = "12px 'Segoe UI'"; relationCtx.fillStyle = '#2d4a2a';
+                    relationCtx.fillText(rel.relation, midX - 20, midY - 8);
+                }
+            });
+        }
+
+        function renderRelationMap() {
+            const mapDiv = document.getElementById('globalRelationMap');
+            if(!mapDiv) return;
+            const oldCanvas = mapDiv.querySelector('.relation-canvas');
+            if(oldCanvas) oldCanvas.remove();
+            const canvas = document.createElement('canvas');
+            canvas.className = 'relation-canvas';
+            canvas.style.position = 'absolute'; canvas.style.top = '0'; canvas.style.left = '0';
+            canvas.style.width = '100%'; canvas.style.height = '100%';
+            mapDiv.appendChild(canvas);
+            relationCanvas = canvas; relationCtx = canvas.getContext('2d');
+            mapDiv.querySelectorAll('.drag-node').forEach(n => n.remove());
+            appData.characters.forEach(char => {
+                const pos = appData.nodePositions[char.id] || { x: 100, y: 100 };
+                const node = document.createElement('div'); node.className = 'drag-node';
+                node.style.left = pos.x + 'px'; node.style.top = pos.y + 'px';
+                const groupId = getCharPrimaryGroupId(char.id);
+                const borderColor = getGroupColor(groupId);
+                node.innerHTML = `<img src="${char.avatar}" onerror="this.src='https://picsum.photos/id/1/80/80'" style="border-color: ${borderColor} !important;"><span>${escapeHtml(char.name)}</span>`;
+                node.setAttribute('data-charid', char.id);
+                makeDraggable(node, char.id);
+                mapDiv.appendChild(node);
+            });
+            setTimeout(() => drawRelations(), 30);
+            window.addEventListener('resize', () => drawRelations());
+        }
+
+        function makeDraggable(el, charId) {
+            let startX, startY, offsetX, offsetY;
+            
+            const onMove = (clientX, clientY) => {
+                let dx = clientX - startX, dy = clientY - startY;
+                let newX = offsetX + dx, newY = offsetY + dy;
+                const parent = el.parentElement;
+                newX = Math.max(0, Math.min(newX, parent.clientWidth - 80));
+                newY = Math.max(0, Math.min(newY, parent.clientHeight - 70));
+                el.style.left = newX + 'px';
+                el.style.top = newY + 'px';
+                appData.nodePositions[charId] = { x: newX, y: newY };
+                drawRelations();
+                // 【关键修改】拖拽过程中不再保存，避免卡顿
+            };
+            
+            const onMouseMove = (e) => { e.preventDefault(); onMove(e.clientX, e.clientY); };
+            const onTouchMove = (e) => { e.preventDefault(); const touch = e.touches[0]; if(touch) onMove(touch.clientX, touch.clientY); };
+            
+            const onEnd = () => {
+                document.removeEventListener('mousemove', onMouseMove);
+                document.removeEventListener('mouseup', onEnd);
+                document.removeEventListener('touchmove', onTouchMove);
+                document.removeEventListener('touchend', onEnd);
+                document.removeEventListener('touchcancel', onEnd);
+                // 【关键修改】拖拽结束时，如果是作者模式，保存一次位置
+                if (isAuthorMode) saveToLocal();
+            };
+            
+            const onStart = (clientX, clientY) => {
+                startX = clientX;
+                startY = clientY;
+                offsetX = parseFloat(el.style.left);
+                offsetY = parseFloat(el.style.top);
+                document.addEventListener('mousemove', onMouseMove);
+                document.addEventListener('mouseup', onEnd);
+                document.addEventListener('touchmove', onTouchMove, { passive: false });
+                document.addEventListener('touchend', onEnd);
+                document.addEventListener('touchcancel', onEnd);
+            };
+            
+            el.addEventListener('mousedown', (e) => {
+                e.preventDefault();
+                onStart(e.clientX, e.clientY);
+            });
+            
+            el.addEventListener('touchstart', (e) => {
+                e.preventDefault();
+                const touch = e.touches[0];
+                if(touch) onStart(touch.clientX, touch.clientY);
+            }, { passive: false });
+        }
+
+        function openPostEditor(type, parentId, editPost = null) {
+            if (!requireAuthor()) return;
+            const isEdit = !!editPost;
+            let images = editPost ? [...(editPost.images || [])] : [];
+            let coverImg = editPost ? editPost.coverImg : '';
+            
+            function renderImageList() {
+                const container = document.getElementById('postImagesPreview');
+                if(container) container.innerHTML = images.map((img, i) => `
+                    <div style="position:relative; display:inline-block; margin:4px;">
+                        <img src="${img}" style="width:70px; height:70px; object-fit:cover; border-radius:12px;">
+                        <button class="btn-icon" style="position:absolute; top:-6px; right:-6px; background:white; padding:2px 6px;" data-remove-img="${i}">✖</button>
+                    </div>
+                `).join('');
+                container?.querySelectorAll('[data-remove-img]').forEach(btn => {
+                    btn.addEventListener('click', () => {
+                        images.splice(parseInt(btn.dataset.removeImg), 1);
+                        renderImageList();
+                        if(images.length > 0 && !coverImg) coverImg = images[0];
+                    });
+                });
+                if(images.length > 0 && !coverImg) coverImg = images[0];
+            }
+            
+            let html = `<h3>${isEdit?'编辑':'新建'}帖子</h3>
+                <input id="postTitle" placeholder="标题" value="${escapeHtml(editPost?.title || '')}" style="width:100%; margin:8px 0; padding:8px; border-radius:20px; border:1px solid #cde0be;">
+                <textarea id="postContent" placeholder="正文" rows="4" style="width:100%; margin:8px 0; padding:8px; border-radius:20px; border:1px solid #cde0be;">${escapeHtml(editPost?.content || '')}</textarea>
+                <div><strong>图片 (首张作为封面)</strong></div>
+                <button type="button" class="btn-icon" id="addPostImagesBtn"><i class="fas fa-images"></i> 添加图片</button>
+                <div id="postImagesPreview" class="post-image-preview"></div>
+                <div style="margin-top:16px;"><button class="btn-primary" id="savePostBtn">保存</button></div>`;
+            document.getElementById('modalContent').innerHTML = html;
+            openModal();
+            renderImageList();
+            
+            document.getElementById('addPostImagesBtn').onclick = () => {
+                triggerMultiImageUpload((base64Array) => {
+                    images.push(...base64Array);
+                    if(!coverImg && images.length > 0) coverImg = images[0];
+                    renderImageList();
+                });
+            };
+            
+            document.getElementById('savePostBtn').onclick = () => {
+                const title = document.getElementById('postTitle').value.trim();
+                const content = document.getElementById('postContent').value.trim();
+                if(!title) { alert('标题不能为空'); return; }
+                if(images.length === 0) { alert('请至少添加一张图片'); return; }
+                const postData = {
+                    id: isEdit ? editPost.id : (nextId.post++),
+                    coverImg: coverImg || images[0],
+                    title, content, images
+                };
+                if(type === 'region') {
+                    if(!regionPosts[parentId]) regionPosts[parentId] = [];
+                    if(isEdit) {
+                        const idx = regionPosts[parentId].findIndex(p => p.id === editPost.id);
+                        regionPosts[parentId][idx] = postData;
+                    } else regionPosts[parentId].push(postData);
+                    renderWorld();
+                } else {
+                    if(!groupPosts[parentId]) groupPosts[parentId] = [];
+                    if(isEdit) {
+                        const idx = groupPosts[parentId].findIndex(p => p.id === editPost.id);
+                        groupPosts[parentId][idx] = postData;
+                    } else groupPosts[parentId].push(postData);
+                    renderRelation();
+                }
+                closeModal();
+                saveToLocal();
+            };
+        }
+
+        function showPostDetail(type, parentId, postId) {
+            let post = null;
+            if(type === 'region') post = regionPosts[parentId]?.find(p => p.id === postId);
+            else post = groupPosts[parentId]?.find(p => p.id === postId);
+            if(!post) return;
+            const imagesHtml = (post.images || []).map(img => `<img src="${img}" style="width:100%; border-radius:16px; margin:6px 0;">`).join('');
+            document.getElementById('modalContent').innerHTML = `
+                <h2>${escapeHtml(post.title)}</h2>
+                <div style="max-height:400px; overflow-y:auto;">${imagesHtml}</div>
+                <p style="white-space:pre-wrap; margin-top:16px;">${escapeHtml(post.content)}</p>
+                <button class="btn-primary" onclick="closeModal()">关闭</button>
+            `;
+            openModal();
+        }
+
+        function renderAll() { renderHome(); renderWorld(); renderRelation(); renderPlayground(); saveToLocal(); }
+
+        function renderHome() {
+            const descInput = document.getElementById('homeDescInput');
+            descInput.value = appData.homeDescription;
+            descInput.readOnly = !isAuthorMode;
+            const heroArea = document.getElementById('heroArea');
+            if(appData.headerImg) {
+                heroArea.innerHTML = `<img class="hero-img" src="${appData.headerImg}">${isAuthorMode ? '<div class="hero-overlay" id="changeHeaderBtn"><i class="fas fa-camera"></i> 更换</div>' : ''}`;
+                if(isAuthorMode) document.getElementById('changeHeaderBtn')?.addEventListener('click', () => { triggerImageUpload(b64=>{ appData.headerImg=b64; renderHome(); }); });
+            } else {
+                heroArea.innerHTML = isAuthorMode ? `<div class="hero-placeholder" id="uploadHeaderPlaceholder">点击上传头图</div>` : `<div class="hero-placeholder">暂无头图</div>`;
+                if(isAuthorMode) document.getElementById('uploadHeaderPlaceholder')?.addEventListener('click', () => { triggerImageUpload(b64=>{ appData.headerImg=b64; renderHome(); }); });
+            }
+            const galleryDiv = document.getElementById('homeGallery');
+            galleryDiv.innerHTML = appData.homeImages.map((img, idx) => `
+                <div class="slide-item" style="position:relative;"><img src="${img}" style="width:100%; height:140px; object-fit:cover; border-radius:16px;">${isAuthorMode ? `<button class="btn-icon" style="position:absolute; top:4px; right:4px;" data-remove-img="${idx}"><i class="fas fa-trash"></i></button>` : ''}</div>
+            `).join('');
+            galleryDiv.querySelectorAll('[data-remove-img]').forEach(btn => btn.addEventListener('click', () => { if(!isAuthorMode) return; appData.homeImages.splice(btn.dataset.removeImg,1); renderHome(); }));
+            
+            const charContainer = document.getElementById('characterList');
+            charContainer.innerHTML = appData.characters.map(c => `
+                <div class="card">
+                    <div style="display:flex; align-items:center; gap:12px; padding:16px 12px 0 12px;">
+                        <img src="${c.avatar}" style="width:56px; height:56px; border-radius:50%; object-fit:cover;">
+                        <div><strong>${escapeHtml(c.name)}</strong><br><span class="tag">${escapeHtml(c.job)}</span></div>
+                    </div>
+                    <div style="padding:12px;"><i class="fas fa-map-pin"></i> ${escapeHtml(c.region)}<br><small>📖 ${escapeHtml(c.backstory?.substring(0,50)||'')}…</small></div>
+                    <div style="padding:0 12px 12px 12px; display:flex; gap:8px;">
+                        <button class="btn-icon view-char" data-id="${c.id}"><i class="fas fa-eye"></i> 详情</button>
+                        ${isAuthorMode ? `<button class="btn-icon edit-char" data-id="${c.id}"><i class="fas fa-edit"></i></button><button class="btn-icon del-char" data-id="${c.id}"><i class="fas fa-trash"></i></button>` : ''}
+                    </div>
+                </div>
+            `).join('');
+            document.querySelectorAll('.view-char').forEach(btn => btn.addEventListener('click', () => showCharDetail(parseInt(btn.dataset.id))));
+            if(isAuthorMode) {
+                document.querySelectorAll('.edit-char').forEach(btn => btn.addEventListener('click', () => openCharForm(parseInt(btn.dataset.id))));
+                document.querySelectorAll('.del-char').forEach(btn => btn.addEventListener('click', () => { if(confirm('删除？')) { const id=parseInt(btn.dataset.id); appData.characters = appData.characters.filter(c=>c.id!==id); delete appData.nodePositions[id]; renderAll(); }}));
+            }
+            descInput.onblur = () => { if(isAuthorMode) { appData.homeDescription = descInput.value; saveToLocal(); } };
+        }
+
+        function showCharDetail(id) { 
+            const c = appData.characters.find(c=>c.id===id); if(!c) return;
+            const galleryHtml = (c.gallery || []).map(item => `
+                <div class="gallery-item" data-lightbox-img="${item.imageUrl}">
+                    <img src="${item.imageUrl}" onerror="this.src='https://picsum.photos/200/150'">
+                    <div class="gallery-title">${escapeHtml(item.title || '')}</div>
+                </div>
+            `).join('');
+            document.getElementById('modalContent').innerHTML = `
+                <div style="text-align:center;">
+                    <img src="${c.avatar}" style="width:100px;border-radius:50%;"><h2>${escapeHtml(c.name)}</h2>
+                    <p>⚔️ ${escapeHtml(c.job)} &nbsp; 📍 ${escapeHtml(c.region)}</p><hr>
+                    <img src="${c.standee}" style="max-width:100%; border-radius:24px; max-height:250px;">
+                    <p><strong>背景故事</strong><br>${escapeHtml(c.backstory)}</p>
+                    ${galleryHtml ? `<hr><h4>🖼️ 图集</h4><div class="slide-row" style="justify-content:center;">${galleryHtml}</div>` : ''}
+                    <button class="btn-primary" onclick="closeModal()" style="margin-top:16px;">关闭</button>
+                </div>
+            `;
+            openModal();
+            document.querySelectorAll('[data-lightbox-img]').forEach(el => {
+                el.addEventListener('click', (e) => {
+                    if(e.target.closest('img')) {
+                        document.getElementById('lightboxImg').src = el.dataset.lightboxImg;
+                        document.getElementById('lightboxModal').style.display = 'flex';
+                    }
+                });
+            });
+        }
+
+        function openCharForm(id=null) {
+            if(!requireAuthor()) return;
+            const isEdit = id !== null;
+            let char = isEdit ? appData.characters.find(c=>c.id===id) : { name:'', avatar:'', job:'', region:'', standee:'', backstory:'', gallery:[] };
+            let tempGallery = [...(char.gallery || [])];
+            function renderGM() {
+                const ctn = document.getElementById('galleryManagerList');
+                if(!ctn) return;
+                ctn.innerHTML = tempGallery.map((item, idx) => `
+                    <div class="gallery-manager-item"><img src="${item.imageUrl}"><input value="${escapeHtml(item.title)}" data-idx="${idx}" class="gallery-title-input" style="flex:1; padding:6px;"><button class="btn-icon" data-del-gallery="${idx}"><i class="fas fa-trash"></i></button></div>
+                `).join('');
+                ctn.querySelectorAll('.gallery-title-input').forEach(inp => inp.addEventListener('input', e => tempGallery[inp.dataset.idx].title = inp.value));
+                ctn.querySelectorAll('[data-del-gallery]').forEach(btn => btn.addEventListener('click', () => { tempGallery.splice(btn.dataset.delGallery,1); renderGM(); }));
+            }
+            document.getElementById('modalContent').innerHTML = `<h3>${isEdit?'编辑':'新建'}人设</h3>
+                <input id="charName" placeholder="名字" value="${escapeHtml(char.name)}"><input id="charJob" placeholder="职业" value="${escapeHtml(char.job)}">
+                <input id="charRegion" placeholder="所在地域" value="${escapeHtml(char.region)}">
+                <div>头像 <button id="uploadAvatarBtn">上传</button><input type="hidden" id="charAvatar" value="${escapeHtml(char.avatar)}"><div id="avatarPreview">${char.avatar?`<img src="${char.avatar}" style="max-width:80px;">`:''}</div></div>
+                <div>立绘 <button id="uploadStandeeBtn">上传</button><input type="hidden" id="charStandee" value="${escapeHtml(char.standee)}"><div id="standeePreview">${char.standee?`<img src="${char.standee}" style="max-width:100px;">`:''}</div></div>
+                <textarea id="charStory">${escapeHtml(char.backstory)}</textarea>
+                <hr><strong>🖼️ 小图集</strong> <button id="addGalleryItemBtn">添加图片</button><div id="galleryManagerList"></div>
+                <button class="btn-primary" id="saveCharBtn">保存</button>`;
+            openModal();
+            renderGM();
+            document.getElementById('uploadAvatarBtn').onclick = () => triggerImageUpload(b64=>{ document.getElementById('charAvatar').value=b64; document.getElementById('avatarPreview').innerHTML=`<img src="${b64}" style="max-width:80px;">`; });
+            document.getElementById('uploadStandeeBtn').onclick = () => triggerImageUpload(b64=>{ document.getElementById('charStandee').value=b64; document.getElementById('standeePreview').innerHTML=`<img src="${b64}" style="max-width:100px;">`; });
+            document.getElementById('addGalleryItemBtn').onclick = () => { triggerImageUpload(b64 => { tempGallery.push({ imageUrl: b64, title: '' }); renderGM(); }); };
+            document.getElementById('saveCharBtn').onclick = () => {
+                const newChar = { id: isEdit ? char.id : Date.now(), name: document.getElementById('charName').value, job: document.getElementById('charJob').value, region: document.getElementById('charRegion').value, avatar: document.getElementById('charAvatar').value, standee: document.getElementById('charStandee').value, backstory: document.getElementById('charStory').value, gallery: tempGallery };
+                if(isEdit) { const idx = appData.characters.findIndex(c=>c.id===id); appData.characters[idx] = newChar; } 
+                else { appData.characters.push(newChar); if(!appData.nodePositions[newChar.id]) appData.nodePositions[newChar.id] = { x:100, y:100 }; }
+                closeModal(); renderAll();
+            };
+        }
+
+        function editRegion(id) {
+            if(!requireAuthor()) return;
+            const region = appData.regions.find(r => r.id === id);
+            if(!region) return;
+            let tempCover = region.cover;
+            const modalContent = document.getElementById('modalContent');
+            modalContent.innerHTML = `
+                <h3>编辑地域</h3>
+                <input id="regName" placeholder="地域名称" value="${escapeHtml(region.name)}" style="width:100%; margin:6px 0; padding:8px; border-radius:20px; border:1px solid #cde0be;">
+                <textarea id="regDesc" placeholder="描述" rows="3" style="width:100%; margin:6px 0; padding:8px; border-radius:20px; border:1px solid #cde0be;">${escapeHtml(region.description)}</textarea>
+                <div>封面图片 <button type="button" class="btn-icon" id="uploadRegionCoverBtn"><i class="fas fa-upload"></i> 上传</button>
+                <input type="hidden" id="regCover" value="${escapeHtml(tempCover)}">
+                <div id="regionCoverPreview">${tempCover ? `<img src="${tempCover}" style="max-width:100px; border-radius:12px;">` : ''}</div></div>
+                <button class="btn-primary" id="saveRegionBtn" style="margin-top:16px;">保存</button>
+            `;
+            openModal();
+            document.getElementById('uploadRegionCoverBtn').onclick = () => {
+                triggerImageUpload((base64) => {
+                    document.getElementById('regCover').value = base64;
+                    document.getElementById('regionCoverPreview').innerHTML = `<img src="${base64}" style="max-width:100px; border-radius:12px;">`;
+                });
+            };
+            document.getElementById('saveRegionBtn').onclick = () => {
+                region.name = document.getElementById('regName').value.trim();
+                region.description = document.getElementById('regDesc').value.trim();
+                region.cover = document.getElementById('regCover').value;
+                if(!region.name) { alert('名称不能为空'); return; }
+                closeModal();
+                renderWorld();
+                saveToLocal();
+            };
+        }
+
+        function editGroup(id) {
+            if(!requireAuthor()) return;
+            const group = appData.groups.find(g => g.id === id);
+            if(!group) return;
+            let tempCover = group.coverImg || '';
+            const modalContent = document.getElementById('modalContent');
+            modalContent.innerHTML = `
+                <h3>编辑团体</h3>
+                <input id="groupName" placeholder="团体名称" value="${escapeHtml(group.name)}" style="width:100%; margin:6px 0; padding:8px; border-radius:20px; border:1px solid #cde0be;">
+                <textarea id="groupDesc" placeholder="描述" rows="3" style="width:100%; margin:6px 0; padding:8px; border-radius:20px; border:1px solid #cde0be;">${escapeHtml(group.description)}</textarea>
+                <div>封面图片 <button type="button" class="btn-icon" id="uploadGroupCoverBtn"><i class="fas fa-upload"></i> 上传</button>
+                <input type="hidden" id="groupCover" value="${escapeHtml(tempCover)}">
+                <div id="groupCoverPreview">${tempCover ? `<img src="${tempCover}" style="max-width:100px; border-radius:12px;">` : ''}</div></div>
+                <button class="btn-primary" id="saveGroupBtn" style="margin-top:16px;">保存</button>
+            `;
+            openModal();
+            document.getElementById('uploadGroupCoverBtn').onclick = () => {
+                triggerImageUpload((base64) => {
+                    document.getElementById('groupCover').value = base64;
+                    document.getElementById('groupCoverPreview').innerHTML = `<img src="${base64}" style="max-width:100px; border-radius:12px;">`;
+                });
+            };
+            document.getElementById('saveGroupBtn').onclick = () => {
+                group.name = document.getElementById('groupName').value.trim();
+                group.description = document.getElementById('groupDesc').value.trim();
+                group.coverImg = document.getElementById('groupCover').value;
+                if(!group.name) { alert('名称不能为空'); return; }
+                closeModal();
+                renderRelation();
+                saveToLocal();
+            };
+        }
+
+        function renderWorld() {
+            const container = document.getElementById('regionListContainer'); container.innerHTML = '';
+            appData.regions.forEach(region => {
+                const posts = regionPosts[region.id] || [];
+                const div = document.createElement('div'); div.className = 'region-card';
+                div.innerHTML = `<div class="flex-between"><h3>🏞️ ${escapeHtml(region.name)}</h3>${isAuthorMode?`<div><button class="btn-icon editRegion" data-id="${region.id}">编辑</button><button class="btn-icon delRegion" data-id="${region.id}">删除</button></div>`:''}</div>
+                <img src="${region.cover}" style="width:100%; max-height:200px; object-fit:cover; border-radius:24px;" onerror="this.src='https://picsum.photos/300/200'"><p>${escapeHtml(region.description)}</p>
+                <div><strong>👥 关联居民</strong><div id="residents-${region.id}" style="display:flex; flex-wrap:wrap;"></div>${isAuthorMode?`<button class="btn-icon addResidentBtn" data-id="${region.id}">➕ 关联</button>`:''}</div>
+                <hr><strong>📸 地域帖子</strong><div id="regionPosts-${region.id}" class="scroll-x"></div>${isAuthorMode?`<button class="btn-icon newRegionPostBtn" data-id="${region.id}">➕ 新建</button>`:''}`;
+                container.appendChild(div);
+                const residentDiv = div.querySelector(`#residents-${region.id}`);
+                residentDiv.innerHTML = (region.residents || []).map(rid => appData.characters.find(c=>c.id===rid)).filter(Boolean).map(ch => `
+                    <div class="resident-item"><img src="${ch.avatar}" onerror="this.src='https://picsum.photos/48/48'"><span>${escapeHtml(ch.name)}</span>${isAuthorMode?`<span class="remove-btn removeResi" data-reg="${region.id}" data-rid="${ch.id}">✖</span>`:''}</div>
+                `).join('');
+                const postContainer = div.querySelector(`#regionPosts-${region.id}`);
+                postContainer.innerHTML = posts.map(p => `<div class="post-preview" data-regid="${region.id}" data-postid="${p.id}"><img src="${p.coverImg}" onerror="this.src='https://picsum.photos/200/150'"><div>${escapeHtml(p.title)}</div>${isAuthorMode?`<button class="delete-post-btn" data-regid="${region.id}" data-postid="${p.id}"><i class="fas fa-trash"></i></button>`:''}</div>`).join('');
+                if(isAuthorMode) {
+                    div.querySelector('.editRegion').addEventListener('click', () => editRegion(region.id));
+                    div.querySelector('.delRegion').addEventListener('click', () => { if(confirm('确定删除该地域吗？')) { appData.regions = appData.regions.filter(r => r.id !== region.id); delete regionPosts[region.id]; renderAll(); }});
+                    div.querySelector('.addResidentBtn').addEventListener('click', () => attachResident(region.id));
+                    div.querySelector('.newRegionPostBtn').addEventListener('click', () => openPostEditor('region', region.id));
+                    div.querySelectorAll('.removeResi').forEach(btn => btn.addEventListener('click', () => { const reg = appData.regions.find(r=>r.id===parseInt(btn.dataset.reg)); reg.residents = reg.residents.filter(id => id !== parseInt(btn.dataset.rid)); renderWorld(); saveToLocal(); }));
+                    postContainer.querySelectorAll('.delete-post-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); const rid = parseInt(btn.dataset.regid); regionPosts[rid] = regionPosts[rid].filter(p => p.id !== parseInt(btn.dataset.postid)); renderWorld(); saveToLocal(); }));
+                }
+                postContainer.querySelectorAll('.post-preview').forEach(el => el.addEventListener('click', (e) => { if(e.target.closest('.delete-post-btn')) return; showPostDetail('region', parseInt(el.dataset.regid), parseInt(el.dataset.postid)); }));
+            });
+        }
+
+        function attachResident(regionId) {
+            if(!requireAuthor()) return;
+            const region = appData.regions.find(r=>r.id===regionId);
+            const available = appData.characters.filter(c => !(region.residents||[]).includes(c.id));
+            if(!available.length) { alert('无可选人设'); return; }
+            let html = `<h3>选择居民</h3><div>`;
+            available.forEach(c => { html += `<div data-charid="${c.id}" style="display:flex; align-items:center; margin:8px; padding:6px; border-radius:30px; background:#f0f5ea; cursor:pointer;"><img src="${c.avatar}" style="width:40px; height:40px; border-radius:50%; margin-right:12px;"><span>${escapeHtml(c.name)} (${escapeHtml(c.job)})</span></div>`; });
+            html += `</div><button id="confirmAddResident" class="btn-primary">确认</button>`;
+            document.getElementById('modalContent').innerHTML = html; openModal();
+            let sel = null;
+            document.querySelectorAll('[data-charid]').forEach(el => el.addEventListener('click', () => { document.querySelectorAll('[data-charid]').forEach(e=>e.style.background='#f0f5ea'); el.style.background='#cde2c1'; sel = parseInt(el.dataset.charid); }));
+            document.getElementById('confirmAddResident').onclick = () => { if(sel) { if(!region.residents) region.residents = []; if(!region.residents.includes(sel)) region.residents.push(sel); closeModal(); renderWorld(); saveToLocal(); } };
+        }
+
+        function renderRelation() {
+            renderRelationMap();
+            const gc = document.getElementById('groupListContainer'); gc.innerHTML = '';
+            appData.groups.forEach(group => {
+                const posts = groupPosts[group.id] || [];
+                const card = document.createElement('div'); card.className = 'region-card';
+                card.innerHTML = `<div class="flex-between"><h3>🏷️ ${escapeHtml(group.name)}</h3>${isAuthorMode?`<div><button class="btn-icon editGroup" data-id="${group.id}">编辑</button><button class="btn-icon delGroup" data-id="${group.id}">删除</button></div>`:''}</div>
+                <img src="${group.coverImg || ''}" style="width:100%; max-height:200px; object-fit:cover; border-radius:24px;" onerror="this.style.display='none'">
+                <p>${escapeHtml(group.description)}</p><div><strong>成员</strong><div id="groupMembers-${group.id}" style="display:flex; flex-wrap:wrap;"></div>${isAuthorMode?`<button class="btn-icon addMemberToGroup" data-id="${group.id}">➕ 添加</button>`:''}</div>
+                <hr><strong>📸 团体帖子</strong><div id="groupPosts-${group.id}" class="scroll-x"></div>${isAuthorMode?`<button class="btn-icon newGroupPostBtn" data-id="${group.id}">➕ 新建</button>`:''}`;
+                gc.appendChild(card);
+                const memberDiv = card.querySelector(`#groupMembers-${group.id}`);
+                memberDiv.innerHTML = (group.members||[]).map(mid => appData.characters.find(c=>c.id===mid)).filter(Boolean).map(m => `<div class="member-item"><img src="${m.avatar}" onerror="this.src='https://picsum.photos/48/48'"><span>${escapeHtml(m.name)}</span>${isAuthorMode?`<span class="remove-btn removeMember" data-gid="${group.id}" data-mid="${m.id}">✖</span>`:''}</div>`).join('');
+                const postScroll = card.querySelector(`#groupPosts-${group.id}`);
+                postScroll.innerHTML = posts.map(p => `<div class="post-preview" data-gpid="${group.id}" data-postid="${p.id}"><img src="${p.coverImg}" onerror="this.src='https://picsum.photos/200/150'"><div>${escapeHtml(p.title)}</div>${isAuthorMode?`<button class="delete-post-btn" data-gpid="${group.id}" data-postid="${p.id}"><i class="fas fa-trash"></i></button>`:''}</div>`).join('');
+                if(isAuthorMode) {
+                    card.querySelector('.editGroup').addEventListener('click', () => editGroup(group.id));
+                    card.querySelector('.delGroup').addEventListener('click', () => { if(confirm('确定删除该团体吗？')) { appData.groups = appData.groups.filter(g => g.id !== group.id); delete groupPosts[group.id]; renderAll(); }});
+                    card.querySelector('.newGroupPostBtn').addEventListener('click', () => openPostEditor('group', group.id));
+                    card.querySelector('.addMemberToGroup').addEventListener('click', () => addMemberToGroup(group.id));
+                    card.querySelectorAll('.removeMember').forEach(btn => btn.addEventListener('click', () => { const g = appData.groups.find(g=>g.id===parseInt(btn.dataset.gid)); g.members = g.members.filter(m => m !== parseInt(btn.dataset.mid)); renderRelation(); saveToLocal(); }));
+                    postScroll.querySelectorAll('.delete-post-btn').forEach(btn => btn.addEventListener('click', (e) => { e.stopPropagation(); const gid = parseInt(btn.dataset.gpid); groupPosts[gid] = groupPosts[gid].filter(p => p.id !== parseInt(btn.dataset.postid)); renderRelation(); saveToLocal(); }));
+                }
+                postScroll.querySelectorAll('.post-preview').forEach(el => el.addEventListener('click', (e) => { if(e.target.closest('.delete-post-btn')) return; showPostDetail('group', parseInt(el.dataset.gpid), parseInt(el.dataset.postid)); }));
+            });
+        }
+
+        function addMemberToGroup(gid) {
+            if(!requireAuthor()) return;
+            const group = appData.groups.find(g=>g.id===gid);
+            const available = appData.characters.filter(c => !(group.members||[]).includes(c.id));
+            if(!available.length) { alert('无可选成员'); return; }
+            let html = `<h3>选择成员</h3><div>`; available.forEach(c => { html += `<div data-charid="${c.id}" style="display:flex; align-items:center; margin:8px; padding:6px; border-radius:30px; background:#f0f5ea; cursor:pointer;"><img src="${c.avatar}" style="width:40px; height:40px; border-radius:50%; margin-right:12px;"><span>${escapeHtml(c.name)}</span></div>`; });
+            html += `</div><button id="confirmAddMember" class="btn-primary">确认</button>`;
+            document.getElementById('modalContent').innerHTML = html; openModal();
+            let sel = null;
+            document.querySelectorAll('[data-charid]').forEach(el => el.addEventListener('click', () => { document.querySelectorAll('[data-charid]').forEach(e=>e.style.background='#f0f5ea'); el.style.background='#cde2c1'; sel = parseInt(el.dataset.charid); }));
+            document.getElementById('confirmAddMember').onclick = () => { if(sel) { if(!group.members) group.members = []; if(!group.members.includes(sel)) group.members.push(sel); closeModal(); renderRelation(); saveToLocal(); } };
+        }
+
+        function renderPlayground() {
+            const grid = document.getElementById('playItemsGrid'); if(!grid) return;
+            let filtered = appData.playItems;
+            if(currentPlayFilter !== "all") filtered = appData.playItems.filter(item => item.type === currentPlayFilter);
+            grid.innerHTML = filtered.map(item => `
+                <div class="card"><img class="card-img" src="${item.imageUrl || 'https://picsum.photos/300/200'}"><div class="card-content"><div class="card-title">${escapeHtml(item.title)}</div><div class="card-tag"><i class="fas ${item.type==='game'?'fa-gamepad':'fa-video'}"></i> ${item.type==='game'?'游戏':'视频'}</div><div class="card-desc">${escapeHtml(item.description||'')}</div><div class="card-actions"><a href="${escapeHtml(item.linkUrl)}" target="_blank" class="btn-primary">${item.type==='game'?'🎮 游玩':'▶ 观看'}</a>${isAuthorMode?`<div><button class="btn-icon edit-play" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="btn-icon del-play" data-id="${item.id}"><i class="fas fa-trash"></i></button></div>`:''}</div></div></div>
+            `).join('');
+            if(isAuthorMode) {
+                document.querySelectorAll('.edit-play').forEach(btn => btn.addEventListener('click', () => openPlayItemForm(parseInt(btn.dataset.id))));
+                document.querySelectorAll('.del-play').forEach(btn => btn.addEventListener('click', () => { if(confirm('删除？')) { appData.playItems = appData.playItems.filter(i=>i.id!==parseInt(btn.dataset.id)); renderPlayground(); saveToLocal(); }}));
+            }
+        }
+
+        function openPlayItemForm(id=null) {
+            if(!requireAuthor()) return;
+            const isEdit = id !== null;
+            let item = isEdit ? appData.playItems.find(i => i.id === id) : { type: 'game', title: '', description: '', imageUrl: '', linkUrl: '' };
+            const modalContent = document.getElementById('modalContent');
+            modalContent.innerHTML = `
+                <h3>${isEdit ? '编辑作品' : '添加作品'}</h3>
+                <select id="playType" style="width:100%; padding:8px; border-radius:20px; border:1px solid #cde0be;">
+                    <option value="game" ${item.type==='game'?'selected':''}>🎮 游戏</option>
+                    <option value="video" ${item.type==='video'?'selected':''}>🎬 视频</option>
+                </select>
+                <input id="playTitle" placeholder="标题" value="${escapeHtml(item.title)}" style="width:100%; margin:6px 0; padding:8px;">
+                <textarea id="playDesc" placeholder="介绍" rows="3" style="width:100%; margin:6px 0; padding:8px;">${escapeHtml(item.description)}</textarea>
+                <div>封面 <button type="button" class="btn-icon" id="uploadPlayImageBtn"><i class="fas fa-upload"></i> 上传</button>
+                <input type="hidden" id="playImageUrl" value="${escapeHtml(item.imageUrl)}">
+                <div id="playImagePreview">${item.imageUrl ? `<img src="${item.imageUrl}" style="max-width:100px; border-radius:12px;">` : ''}</div></div>
+                <input id="playLink" placeholder="链接URL" value="${escapeHtml(item.linkUrl)}" style="width:100%; margin:6px 0; padding:8px;">
+                <button class="btn-primary" id="savePlayBtn">保存</button>
+            `;
+            openModal();
+            document.getElementById('uploadPlayImageBtn').onclick = () => triggerImageUpload((base64) => { document.getElementById('playImageUrl').value = base64; document.getElementById('playImagePreview').innerHTML = `<img src="${base64}" style="max-width:100px; border-radius:12px;">`; });
+            document.getElementById('savePlayBtn').onclick = () => {
+                const newItem = {
+                    id: isEdit ? item.id : (nextId.play++),
+                    type: document.getElementById('playType').value,
+                    title: document.getElementById('playTitle').value,
+                    description: document.getElementById('playDesc').value,
+                    imageUrl: document.getElementById('playImageUrl').value,
+                    linkUrl: document.getElementById('playLink').value
+                };
+                if(!newItem.title.trim() || !newItem.linkUrl.trim()) { alert("标题和链接必填"); return; }
+                if(isEdit) { const idx = appData.playItems.findIndex(i=>i.id===id); appData.playItems[idx] = newItem; }
+                else appData.playItems.push(newItem);
+                closeModal(); renderPlayground(); saveToLocal();
+            };
+        }
+
+        window.closeModal = function() { document.getElementById('globalModal').style.display='none'; };
+        function openModal() { document.getElementById('globalModal').style.display='flex'; }
+        function escapeHtml(s) { return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
+
+        document.querySelectorAll('.filter-chip').forEach(chip => chip.addEventListener('click', () => { document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active')); chip.classList.add('active'); currentPlayFilter = chip.dataset.filter; renderPlayground(); }));
+        document.getElementById('addHomeImageBtn').onclick = () => { if(requireAuthor()) triggerImageUpload(b64=>{ appData.homeImages.push(b64); renderHome(); }); };
+        document.getElementById('newCharacterBtn').onclick = () => openCharForm();
+        document.getElementById('newRegionBtn').onclick = () => { if(requireAuthor()) { const id = nextId.region++; appData.regions.push({ id, name:'新地域', cover:'', description:'...', residents:[] }); renderAll(); }};
+        document.getElementById('newGroupBtn').onclick = () => { if(requireAuthor()) { const id = nextId.group++; appData.groups.push({ id, name:'新团体', description:'', members:[] }); groupPosts[id]=[]; renderAll(); }};
+        document.getElementById('editRelationsBtn').onclick = () => { if(requireAuthor()) openRelationEditor(); };
+        document.getElementById('newPlayItemBtn').onclick = () => openPlayItemForm();
+        document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => { 
+            document.querySelectorAll('.page').forEach(p=>p.classList.remove('active-page')); 
+            document.getElementById(btn.dataset.page+'Page').classList.add('active-page');
+            document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
+            if(btn.dataset.page === 'relation') setTimeout(drawRelations,50);
+        }));
+
+        function openRelationEditor() {
+            const chars = appData.characters; if(chars.length<2) { alert("至少两位角色"); return; }
+            let html = `<h3>编辑关系</h3><div id="relList">`;
+            appData.relationships.forEach((rel,idx) => { const a=chars.find(c=>c.id===rel.from), b=chars.find(c=>c.id===rel.to); html+=`<div style="background:#f0f5ea; border-radius:20px; padding:8px; margin-bottom:8px; display:flex; justify-content:space-between;"><span><strong>${a?.name}</strong> → <strong>${b?.name}</strong> : ${escapeHtml(rel.relation)}</span><button class="btn-icon" data-del-rel="${idx}"><i class="fas fa-trash"></i></button></div>`; });
+            html+=`</div><hr><select id="relFrom">${chars.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select><select id="relTo">${chars.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select><input id="relDesc" placeholder="关系描述"><button id="addRelationBtn" class="btn-primary">添加</button><button id="closeRelBtn" class="btn-primary" style="background:#aaa;">关闭</button>`;
+            document.getElementById('modalContent').innerHTML=html; openModal();
+            document.querySelectorAll('[data-del-rel]').forEach(btn => btn.addEventListener('click', () => { appData.relationships.splice(btn.dataset.delRel,1); openRelationEditor(); renderRelationMap(); }));
+            document.getElementById('addRelationBtn').onclick = () => { const f=parseInt(document.getElementById('relFrom').value), t=parseInt(document.getElementById('relTo').value), d=document.getElementById('relDesc').value.trim(); if(f===t) { alert('不同角色'); return; } if(!d) { alert('填写描述'); return; } appData.relationships.push({from:f,to:t,relation:d}); saveToLocal(); openRelationEditor(); renderRelationMap(); };
+            document.getElementById('closeRelBtn').onclick = () => { closeModal(); renderRelationMap(); };
+        }
+
+        loadFromLocal();
+        isAuthorMode = false;
+        updateModeUI();
+        document.getElementById('lightboxModal').addEventListener('click', function(e) { if(e.target === this) this.style.display = 'none'; });
+    })();
+</script>
+</body>
+</html>
