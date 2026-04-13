@@ -291,12 +291,17 @@
             position: relative;
             background: #eef1e7;
             min-height: 400px;
+            height: 500px;
             border-radius: 36px;
             overflow: hidden;
             border: 2px dashed #bdd8ae;
             margin: 1rem 0;
             touch-action: none;
             width: 100%;
+            cursor: grab;
+        }
+        .relation-map:active {
+            cursor: grabbing;
         }
         .drag-node {
             position: absolute;
@@ -464,6 +469,19 @@
             background: var(--primary-green);
             color: white;
         }
+        .reset-view-btn {
+            position: absolute;
+            bottom: 12px;
+            right: 12px;
+            z-index: 30;
+            background: white;
+            border-radius: 40px;
+            padding: 6px 12px;
+            box-shadow: 0 2px 8px rgba(0,0,0,0.1);
+            font-size: 0.8rem;
+            cursor: pointer;
+            border: 1px solid #bdd8ae;
+        }
 
         /* 游客模式隐藏作者控件 */
         body.guest-mode .author-only,
@@ -597,7 +615,9 @@
         <div class="edit-relation-btn author-only">
             <button class="btn-primary" id="editRelationsBtn"><i class="fas fa-project-diagram"></i> 编辑关系</button>
         </div>
-        <div id="globalRelationMap" class="relation-map" style="min-height: 400px; position: relative;"></div>
+        <div id="globalRelationMap" class="relation-map" style="min-height: 400px; height: 500px; position: relative;">
+            <button class="reset-view-btn" id="resetRelationViewBtn" title="重置视图"><i class="fas fa-arrows-alt"></i> 重置</button>
+        </div>
         <div class="flex-between"><h3>🏷️ 团体卡</h3><button class="btn-primary author-only" id="newGroupBtn"><i class="fas fa-users"></i> 新建团体</button></div>
         <div id="groupListContainer"></div>
     </div>
@@ -624,31 +644,19 @@
         const AUTHOR_PASSWORD = "mori2024";
         let isAuthorMode = false;
         
-        // 团体配色 (柔和自然)
+        // 团体配色
         const GROUP_COLORS = [
-            '#3b8b3a', // 默认绿
-            '#8b7b8b', // 灰紫
-            '#6a9fb5', // 雾蓝
-            '#d4a373', // 杏色
-            '#b5838d', // 玫瑰粽
-            '#6d6875', // 岩灰
-            '#a3b18a', // 苔绿
-            '#e07a5f', // 陶土
-            '#81b29a', // 薄荷
+            '#3b8b3a', '#8b7b8b', '#6a9fb5', '#d4a373', '#b5838d', '#6d6875', '#a3b18a', '#e07a5f', '#81b29a'
         ];
         
         function getGroupColor(groupId) {
             if (!groupId) return GROUP_COLORS[0];
-            const index = (groupId * 31) % GROUP_COLORS.length;
-            return GROUP_COLORS[index] || GROUP_COLORS[0];
+            return GROUP_COLORS[(groupId * 31) % GROUP_COLORS.length] || GROUP_COLORS[0];
         }
         
-        // 获取角色所属的第一个团体ID（用于边框颜色）
         function getCharPrimaryGroupId(charId) {
             for (let group of appData.groups) {
-                if (group.members && group.members.includes(charId)) {
-                    return group.id;
-                }
+                if (group.members && group.members.includes(charId)) return group.id;
             }
             return null;
         }
@@ -672,12 +680,7 @@
         }
         
         function promptAuthorLogin() {
-            if (isAuthorMode) {
-                isAuthorMode = false;
-                updateModeUI();
-                return;
-            }
-            // 使用自定义密码输入框（密文）
+            if (isAuthorMode) { isAuthorMode = false; updateModeUI(); return; }
             const modal = document.createElement('div');
             modal.style.cssText = 'position:fixed; top:0; left:0; width:100%; height:100%; background:rgba(0,0,0,0.5); display:flex; align-items:center; justify-content:center; z-index:10000;';
             modal.innerHTML = `
@@ -691,20 +694,11 @@
                 </div>
             `;
             document.body.appendChild(modal);
-            const input = document.getElementById('pwdInput');
-            input.focus();
-            
+            const input = document.getElementById('pwdInput'); input.focus();
             const close = () => modal.remove();
             document.getElementById('confirmPwd').onclick = () => {
-                if (input.value === AUTHOR_PASSWORD) {
-                    isAuthorMode = true;
-                    updateModeUI();
-                    setTimeout(() => { if (document.getElementById('relationPage').classList.contains('active-page')) drawRelations(); }, 30);
-                    close();
-                } else {
-                    alert('❌ 密码错误');
-                    close();
-                }
+                if (input.value === AUTHOR_PASSWORD) { isAuthorMode = true; updateModeUI(); setTimeout(() => { if (document.getElementById('relationPage').classList.contains('active-page')) drawRelations(); }, 30); close(); }
+                else { alert('❌ 密码错误'); close(); }
             };
             document.getElementById('cancelPwd').onclick = close;
             modal.onclick = (e) => { if(e.target === modal) close(); };
@@ -713,30 +707,21 @@
         document.getElementById('modeToggleBtn').addEventListener('click', promptAuthorLogin);
         
         function requireAuthor() {
-            if (!isAuthorMode) {
-                alert("✨ 游客模式仅供浏览，请点击右上角「游客」解锁编辑。");
-                return false;
-            }
+            if (!isAuthorMode) { alert("✨ 游客模式仅供浏览，请点击右上角「游客」解锁编辑。"); return false; }
             return true;
         }
         
         const originalSave = function() {
             if (!isAuthorMode) return;
-            localStorage.setItem('MoriData', JSON.stringify({
-                ...appData,
-                regionPosts, groupPosts, nextId
-            }));
+            localStorage.setItem('MoriData', JSON.stringify({ ...appData, regionPosts, groupPosts, nextId }));
         };
         
         let appData = {
             headerImg: "", homeDescription: "欢迎来到秘林之息，在这里编织属于你的幻想故事。", homeImages: [],
             characters: [], regions: [], groups: [], nodePositions: {}, relationships: [], playItems: []
         };
-        let regionPosts = {};
-        let groupPosts = {};
-        let nextId = { char:100, region:200, group:300, post:1000, play:400 };
-        let relationCanvas = null, relationCtx = null, currentPlayFilter = "all";
-        let resizeObserver = null;
+        let regionPosts = {}, groupPosts = {}, nextId = { char:100, region:200, group:300, post:1000, play:400 };
+        let relationCanvas = null, relationCtx = null, currentPlayFilter = "all", resizeObserver = null;
 
         function fileToBase64(file) {
             return new Promise((resolve, reject) => {
@@ -746,46 +731,16 @@
                 reader.readAsDataURL(file);
             });
         }
-        function triggerImageUpload(callback) {
-            if (!requireAuthor()) return;
-            const input = document.createElement('input');
-            input.type = 'file'; input.accept = 'image/*';
-            input.onchange = async (e) => {
-                const file = e.target.files[0];
-                if(file) { const base64 = await fileToBase64(file); callback(base64); }
-            };
-            input.click();
-        }
-        function triggerMultiImageUpload(callback) {
-            if (!requireAuthor()) return;
-            const input = document.createElement('input');
-            input.type = 'file'; input.accept = 'image/*'; input.multiple = true;
-            input.onchange = async (e) => {
-                const files = Array.from(e.target.files);
-                const base64Array = await Promise.all(files.map(f => fileToBase64(f)));
-                callback(base64Array);
-            };
-            input.click();
-        }
+        function triggerImageUpload(callback) { if (!requireAuthor()) return; const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.onchange = async (e) => { if(e.target.files[0]) callback(await fileToBase64(e.target.files[0])); }; input.click(); }
+        function triggerMultiImageUpload(callback) { if (!requireAuthor()) return; const input = document.createElement('input'); input.type = 'file'; input.accept = 'image/*'; input.multiple = true; input.onchange = async (e) => { const files = Array.from(e.target.files); callback(await Promise.all(files.map(f => fileToBase64(f)))); }; input.click(); }
 
         function saveToLocal() { originalSave(); }
         
-        // 导出数据
         function exportData() {
-            const data = {
-                ...appData,
-                regionPosts, groupPosts, nextId
-            };
+            const data = { ...appData, regionPosts, groupPosts, nextId };
             const blob = new Blob([JSON.stringify(data)], {type: 'application/json'});
-            const url = URL.createObjectURL(blob);
-            const a = document.createElement('a');
-            a.href = url;
-            a.download = `mori_backup_${new Date().toISOString().slice(0,10)}.json`;
-            a.click();
-            URL.revokeObjectURL(url);
+            const a = document.createElement('a'); a.href = URL.createObjectURL(blob); a.download = `mori_backup_${new Date().toISOString().slice(0,10)}.json`; a.click();
         }
-        
-        // 导入数据
         function importData(file) {
             const reader = new FileReader();
             reader.onload = (e) => {
@@ -800,17 +755,13 @@
                     appData.characters.forEach(c => { if (!c.gallery) c.gallery = []; });
                     if (!appData.nodePositions) appData.nodePositions = {};
                     syncNodePositionsFromChars();
-                    saveToLocal();
-                    renderAll();
+                    saveToLocal(); renderAll();
                     alert('✅ 数据导入成功！');
-                } catch (err) {
-                    alert('❌ 文件格式错误');
-                }
+                } catch (err) { alert('❌ 文件格式错误'); }
             };
             reader.readAsDataURL(file);
         }
         
-        // 优先从远程加载数据 (用于 GitHub Pages)
         async function loadRemoteData() {
             try {
                 const response = await fetch('./mori_data.json');
@@ -825,10 +776,7 @@
                 if (!appData.nodePositions) appData.nodePositions = {};
                 syncNodePositionsFromChars();
                 renderAll();
-            } catch(e) {
-                // 远程加载失败则回退到 localStorage
-                loadFromLocal();
-            }
+            } catch(e) { loadFromLocal(); }
         }
         
         function loadFromLocal() {
@@ -840,16 +788,10 @@
                     if(data.regionPosts) regionPosts = data.regionPosts;
                     if(data.groupPosts) groupPosts = data.groupPosts;
                     if(data.nextId) nextId = data.nextId;
-                    if(!appData.relationships) appData.relationships = [];
-                    if(!appData.playItems) appData.playItems = [];
                 } catch(e) {}
             } else {
-                // 默认示例数据
                 appData.characters = [
-                    { id: 1, name: "艾琳", avatar: "https://picsum.photos/id/64/100/100", job: "守林人", region: "苍翠林地", standee: "https://picsum.photos/id/15/200/300", backstory: "自幼与森林对话，守护秘境。", gallery: [
-                        { imageUrl: "https://picsum.photos/id/104/200/150", title: "林间小屋" },
-                        { imageUrl: "https://picsum.photos/id/28/200/150", title: "她的弓箭" }
-                    ]},
+                    { id: 1, name: "艾琳", avatar: "https://picsum.photos/id/64/100/100", job: "守林人", region: "苍翠林地", standee: "https://picsum.photos/id/15/200/300", backstory: "自幼与森林对话，守护秘境。", gallery: [{ imageUrl: "https://picsum.photos/id/104/200/150", title: "林间小屋" }] },
                     { id: 2, name: "洛根", avatar: "https://picsum.photos/id/26/100/100", job: "巡夜者", region: "迷雾沼泽", standee: "https://picsum.photos/id/22/200/300", backstory: "沉默的守护者，身世成谜。", gallery: [] }
                 ];
                 appData.regions = [{ id: 201, name: "苍翠林地", cover: "https://picsum.photos/id/104/300/200", description: "古老巨树环绕的圣所", residents: [1] }];
@@ -871,9 +813,7 @@
         }
 
         function syncNodePositionsFromChars() {
-            appData.characters.forEach(c => {
-                if(!appData.nodePositions[c.id]) appData.nodePositions[c.id] = { x: 80 + Math.random() * 300, y: 80 + Math.random() * 250 };
-            });
+            appData.characters.forEach(c => { if(!appData.nodePositions[c.id]) appData.nodePositions[c.id] = { x: 80 + Math.random() * 300, y: 80 + Math.random() * 250 }; });
         }
 
         function drawRelations() {
@@ -908,104 +848,110 @@
             });
         }
 
+        let isPanning = false, panStartX = 0, panStartY = 0, panStartPositions = null;
+        function initPanning(mapDiv) {
+            const onPanStart = (clientX, clientY) => {
+                if (event.target.closest('.drag-node')) return;
+                isPanning = true; panStartX = clientX; panStartY = clientY;
+                panStartPositions = {};
+                document.querySelectorAll('#globalRelationMap .drag-node').forEach(node => {
+                    const id = node.getAttribute('data-charid');
+                    panStartPositions[id] = { x: parseFloat(node.style.left), y: parseFloat(node.style.top) };
+                });
+                mapDiv.style.cursor = 'grabbing';
+            };
+            const onPanMove = (clientX, clientY) => {
+                if (!isPanning || !panStartPositions) return;
+                const dx = clientX - panStartX, dy = clientY - panStartY;
+                document.querySelectorAll('#globalRelationMap .drag-node').forEach(node => {
+                    const id = node.getAttribute('data-charid'), startPos = panStartPositions[id];
+                    if (startPos) {
+                        let newX = startPos.x + dx, newY = startPos.y + dy;
+                        newX = Math.max(-30, Math.min(newX, mapDiv.clientWidth - 40));
+                        newY = Math.max(-30, Math.min(newY, mapDiv.clientHeight - 40));
+                        node.style.left = newX + 'px'; node.style.top = newY + 'px';
+                        appData.nodePositions[id] = { x: newX, y: newY };
+                    }
+                });
+                drawRelations();
+            };
+            const onPanEnd = () => { if(isPanning) { isPanning = false; panStartPositions = null; mapDiv.style.cursor = 'grab'; if (isAuthorMode) saveToLocal(); } };
+            mapDiv.addEventListener('mousedown', (e) => { if (e.target.closest('.drag-node')) return; e.preventDefault(); onPanStart(e.clientX, e.clientY); });
+            mapDiv.addEventListener('touchstart', (e) => { if (e.target.closest('.drag-node')) return; e.preventDefault(); const touch = e.touches[0]; if(touch) onPanStart(touch.clientX, touch.clientY); }, { passive: false });
+            window.addEventListener('mousemove', (e) => { if(isPanning) { e.preventDefault(); onPanMove(e.clientX, e.clientY); } });
+            window.addEventListener('touchmove', (e) => { if(isPanning) { e.preventDefault(); const touch = e.touches[0]; if(touch) onPanMove(touch.clientX, touch.clientY); } }, { passive: false });
+            window.addEventListener('mouseup', onPanEnd);
+            window.addEventListener('touchend', onPanEnd);
+            window.addEventListener('touchcancel', onPanEnd);
+        }
+
+        function resetRelationView() {
+            appData.characters.forEach(c => { appData.nodePositions[c.id] = { x: 50 + Math.random() * 300, y: 50 + Math.random() * 250 }; });
+            renderRelationMap(); if (isAuthorMode) saveToLocal();
+        }
+
         function renderRelationMap() {
             const mapDiv = document.getElementById('globalRelationMap');
             if(!mapDiv) return;
-            const oldCanvas = mapDiv.querySelector('.relation-canvas');
-            if(oldCanvas) oldCanvas.remove();
-            const canvas = document.createElement('canvas');
-            canvas.className = 'relation-canvas';
-            canvas.style.position = 'absolute'; canvas.style.top = '0'; canvas.style.left = '0';
-            canvas.style.width = '100%'; canvas.style.height = '100%';
+            const oldCanvas = mapDiv.querySelector('.relation-canvas'); if(oldCanvas) oldCanvas.remove();
+            const canvas = document.createElement('canvas'); canvas.className = 'relation-canvas';
+            canvas.style.cssText = 'position:absolute; top:0; left:0; width:100%; height:100%;';
             mapDiv.appendChild(canvas);
             relationCanvas = canvas; relationCtx = canvas.getContext('2d');
-            
             mapDiv.querySelectorAll('.drag-node').forEach(n => n.remove());
             appData.characters.forEach(char => {
                 const pos = appData.nodePositions[char.id] || { x: 100, y: 100 };
                 const node = document.createElement('div'); node.className = 'drag-node';
                 node.style.left = pos.x + 'px'; node.style.top = pos.y + 'px';
-                const groupId = getCharPrimaryGroupId(char.id);
-                const borderColor = getGroupColor(groupId);
+                const borderColor = getGroupColor(getCharPrimaryGroupId(char.id));
                 node.innerHTML = `<img src="${char.avatar}" onerror="this.src='https://picsum.photos/id/1/80/80'" style="border-color: ${borderColor} !important;"><span>${escapeHtml(char.name)}</span>`;
                 node.setAttribute('data-charid', char.id);
                 makeDraggable(node, char.id);
                 mapDiv.appendChild(node);
             });
-            
-            const drawWhenReady = () => {
-                const rect = mapDiv.getBoundingClientRect();
-                if(rect.width > 0 && rect.height > 0) {
-                    drawRelations();
-                } else {
-                    setTimeout(drawWhenReady, 50);
-                }
-            };
+            initPanning(mapDiv);
+            const drawWhenReady = () => { const rect = mapDiv.getBoundingClientRect(); if(rect.width>0 && rect.height>0) drawRelations(); else setTimeout(drawWhenReady, 20); };
             setTimeout(drawWhenReady, 20);
-            
             if (resizeObserver) resizeObserver.disconnect();
-            resizeObserver = new ResizeObserver(() => { drawRelations(); });
+            resizeObserver = new ResizeObserver(() => drawRelations());
             resizeObserver.observe(mapDiv);
             window.addEventListener('resize', () => drawRelations());
         }
 
         function makeDraggable(el, charId) {
             let startX, startY, offsetX, offsetY;
-            
             const onMove = (clientX, clientY) => {
                 let dx = clientX - startX, dy = clientY - startY;
                 let newX = offsetX + dx, newY = offsetY + dy;
                 const parent = el.parentElement;
-                newX = Math.max(0, Math.min(newX, parent.clientWidth - 70));
-                newY = Math.max(0, Math.min(newY, parent.clientHeight - 60));
-                el.style.left = newX + 'px';
-                el.style.top = newY + 'px';
+                newX = Math.max(-30, Math.min(newX, parent.clientWidth - 40));
+                newY = Math.max(-30, Math.min(newY, parent.clientHeight - 40));
+                el.style.left = newX + 'px'; el.style.top = newY + 'px';
                 appData.nodePositions[charId] = { x: newX, y: newY };
                 drawRelations();
             };
-            
             const onMouseMove = (e) => { e.preventDefault(); onMove(e.clientX, e.clientY); };
             const onTouchMove = (e) => { e.preventDefault(); const touch = e.touches[0]; if(touch) onMove(touch.clientX, touch.clientY); };
-            
             const onEnd = () => {
-                document.removeEventListener('mousemove', onMouseMove);
-                document.removeEventListener('mouseup', onEnd);
-                document.removeEventListener('touchmove', onTouchMove);
-                document.removeEventListener('touchend', onEnd);
-                document.removeEventListener('touchcancel', onEnd);
+                document.removeEventListener('mousemove', onMouseMove); document.removeEventListener('mouseup', onEnd);
+                document.removeEventListener('touchmove', onTouchMove); document.removeEventListener('touchend', onEnd); document.removeEventListener('touchcancel', onEnd);
                 if (isAuthorMode) saveToLocal();
             };
-            
             const onStart = (clientX, clientY) => {
-                startX = clientX;
-                startY = clientY;
-                offsetX = parseFloat(el.style.left);
-                offsetY = parseFloat(el.style.top);
-                document.addEventListener('mousemove', onMouseMove);
-                document.addEventListener('mouseup', onEnd);
-                document.addEventListener('touchmove', onTouchMove, { passive: false });
-                document.addEventListener('touchend', onEnd);
-                document.addEventListener('touchcancel', onEnd);
+                startX = clientX; startY = clientY; offsetX = parseFloat(el.style.left); offsetY = parseFloat(el.style.top);
+                document.addEventListener('mousemove', onMouseMove); document.addEventListener('mouseup', onEnd);
+                document.addEventListener('touchmove', onTouchMove, { passive: false }); document.addEventListener('touchend', onEnd); document.addEventListener('touchcancel', onEnd);
             };
-            
-            el.addEventListener('mousedown', (e) => {
-                e.preventDefault();
-                onStart(e.clientX, e.clientY);
-            });
-            
-            el.addEventListener('touchstart', (e) => {
-                e.preventDefault();
-                const touch = e.touches[0];
-                if(touch) onStart(touch.clientX, touch.clientY);
-            }, { passive: false });
+            el.addEventListener('mousedown', (e) => { e.preventDefault(); e.stopPropagation(); onStart(e.clientX, e.clientY); });
+            el.addEventListener('touchstart', (e) => { e.preventDefault(); e.stopPropagation(); const touch = e.touches[0]; if(touch) onStart(touch.clientX, touch.clientY); }, { passive: false });
         }
 
+        // ==================== 完整的编辑功能 ====================
         function openPostEditor(type, parentId, editPost = null) {
             if (!requireAuthor()) return;
             const isEdit = !!editPost;
             let images = editPost ? [...(editPost.images || [])] : [];
             let coverImg = editPost ? editPost.coverImg : '';
-            
             function renderImageList() {
                 const container = document.getElementById('postImagesPreview');
                 if(container) container.innerHTML = images.map((img, i) => `
@@ -1023,7 +969,6 @@
                 });
                 if(images.length > 0 && !coverImg) coverImg = images[0];
             }
-            
             let html = `<h3>${isEdit?'编辑':'新建'}帖子</h3>
                 <input id="postTitle" placeholder="标题" value="${escapeHtml(editPost?.title || '')}" style="width:100%; margin:8px 0; padding:8px; border-radius:20px; border:1px solid #cde0be;">
                 <textarea id="postContent" placeholder="正文" rows="4" style="width:100%; margin:8px 0; padding:8px; border-radius:20px; border:1px solid #cde0be;">${escapeHtml(editPost?.content || '')}</textarea>
@@ -1031,132 +976,66 @@
                 <button type="button" class="btn-icon" id="addPostImagesBtn"><i class="fas fa-images"></i> 添加图片</button>
                 <div id="postImagesPreview" class="post-image-preview"></div>
                 <div style="margin-top:16px;"><button class="btn-primary" id="savePostBtn">保存</button></div>`;
-            document.getElementById('modalContent').innerHTML = html;
-            openModal();
-            renderImageList();
-            
+            document.getElementById('modalContent').innerHTML = html; openModal(); renderImageList();
             document.getElementById('addPostImagesBtn').onclick = () => {
-                triggerMultiImageUpload((base64Array) => {
-                    images.push(...base64Array);
-                    if(!coverImg && images.length > 0) coverImg = images[0];
-                    renderImageList();
-                });
+                triggerMultiImageUpload((base64Array) => { images.push(...base64Array); if(!coverImg && images.length > 0) coverImg = images[0]; renderImageList(); });
             };
-            
             document.getElementById('savePostBtn').onclick = () => {
-                const title = document.getElementById('postTitle').value.trim();
-                const content = document.getElementById('postContent').value.trim();
-                if(!title) { alert('标题不能为空'); return; }
-                if(images.length === 0) { alert('请至少添加一张图片'); return; }
-                const postData = {
-                    id: isEdit ? editPost.id : (nextId.post++),
-                    coverImg: coverImg || images[0],
-                    title, content, images
-                };
+                const title = document.getElementById('postTitle').value.trim(), content = document.getElementById('postContent').value.trim();
+                if(!title) { alert('标题不能为空'); return; } if(images.length === 0) { alert('请至少添加一张图片'); return; }
+                const postData = { id: isEdit ? editPost.id : (nextId.post++), coverImg: coverImg || images[0], title, content, images };
                 if(type === 'region') {
                     if(!regionPosts[parentId]) regionPosts[parentId] = [];
-                    if(isEdit) {
-                        const idx = regionPosts[parentId].findIndex(p => p.id === editPost.id);
-                        regionPosts[parentId][idx] = postData;
-                    } else regionPosts[parentId].push(postData);
+                    if(isEdit) { const idx = regionPosts[parentId].findIndex(p => p.id === editPost.id); regionPosts[parentId][idx] = postData; }
+                    else regionPosts[parentId].push(postData);
                     renderWorld();
                 } else {
                     if(!groupPosts[parentId]) groupPosts[parentId] = [];
-                    if(isEdit) {
-                        const idx = groupPosts[parentId].findIndex(p => p.id === editPost.id);
-                        groupPosts[parentId][idx] = postData;
-                    } else groupPosts[parentId].push(postData);
+                    if(isEdit) { const idx = groupPosts[parentId].findIndex(p => p.id === editPost.id); groupPosts[parentId][idx] = postData; }
+                    else groupPosts[parentId].push(postData);
                     renderRelation();
                 }
-                closeModal();
-                saveToLocal();
+                closeModal(); saveToLocal();
             };
         }
 
         function showPostDetail(type, parentId, postId) {
-            let post = null;
-            if(type === 'region') post = regionPosts[parentId]?.find(p => p.id === postId);
-            else post = groupPosts[parentId]?.find(p => p.id === postId);
+            let post = type === 'region' ? regionPosts[parentId]?.find(p => p.id === postId) : groupPosts[parentId]?.find(p => p.id === postId);
             if(!post) return;
             const imagesHtml = (post.images || []).map(img => `<img src="${img}" style="width:100%; border-radius:16px; margin:6px 0;">`).join('');
             document.getElementById('modalContent').innerHTML = `
-                <h2>${escapeHtml(post.title)}</h2>
-                <div style="max-height:400px; overflow-y:auto;">${imagesHtml}</div>
-                <p style="white-space:pre-wrap; margin-top:16px;">${escapeHtml(post.content)}</p>
-                <button class="btn-primary" onclick="closeModal()">关闭</button>
-            `;
+                <h2>${escapeHtml(post.title)}</h2><div style="max-height:400px; overflow-y:auto;">${imagesHtml}</div>
+                <p style="white-space:pre-wrap; margin-top:16px;">${escapeHtml(post.content)}</p><button class="btn-primary" onclick="closeModal()">关闭</button>`;
             openModal();
         }
 
         function renderAll() { renderHome(); renderWorld(); renderRelation(); renderPlayground(); saveToLocal(); }
 
         function renderHome() {
-            const descInput = document.getElementById('homeDescInput');
-            descInput.value = appData.homeDescription;
-            descInput.readOnly = !isAuthorMode;
+            const descInput = document.getElementById('homeDescInput'); descInput.value = appData.homeDescription; descInput.readOnly = !isAuthorMode;
             const heroArea = document.getElementById('heroArea');
-            if(appData.headerImg) {
-                heroArea.innerHTML = `<img class="hero-img" src="${appData.headerImg}">${isAuthorMode ? '<div class="hero-overlay" id="changeHeaderBtn"><i class="fas fa-camera"></i> 更换</div>' : ''}`;
-                if(isAuthorMode) document.getElementById('changeHeaderBtn')?.addEventListener('click', () => { triggerImageUpload(b64=>{ appData.headerImg=b64; renderHome(); }); });
-            } else {
-                heroArea.innerHTML = isAuthorMode ? `<div class="hero-placeholder" id="uploadHeaderPlaceholder">点击上传头图</div>` : `<div class="hero-placeholder">暂无头图</div>`;
-                if(isAuthorMode) document.getElementById('uploadHeaderPlaceholder')?.addEventListener('click', () => { triggerImageUpload(b64=>{ appData.headerImg=b64; renderHome(); }); });
-            }
+            heroArea.innerHTML = appData.headerImg ? `<img class="hero-img" src="${appData.headerImg}">${isAuthorMode?'<div class="hero-overlay" id="changeHeaderBtn"><i class="fas fa-camera"></i> 更换</div>':''}` : (isAuthorMode?`<div class="hero-placeholder" id="uploadHeaderPlaceholder">点击上传头图</div>`:`<div class="hero-placeholder">暂无头图</div>`);
+            if(isAuthorMode) (document.getElementById('changeHeaderBtn')||document.getElementById('uploadHeaderPlaceholder'))?.addEventListener('click', ()=>triggerImageUpload(b64=>{appData.headerImg=b64;renderHome();}));
             const galleryDiv = document.getElementById('homeGallery');
-            galleryDiv.innerHTML = appData.homeImages.map((img, idx) => `
-                <div class="slide-item" style="position:relative;"><img src="${img}" style="width:100%; height:120px; object-fit:cover; border-radius:16px;">${isAuthorMode ? `<button class="btn-icon" style="position:absolute; top:4px; right:4px;" data-remove-img="${idx}"><i class="fas fa-trash"></i></button>` : ''}</div>
-            `).join('');
-            galleryDiv.querySelectorAll('[data-remove-img]').forEach(btn => btn.addEventListener('click', () => { if(!isAuthorMode) return; appData.homeImages.splice(btn.dataset.removeImg,1); renderHome(); }));
-            
+            galleryDiv.innerHTML = appData.homeImages.map((img,i)=>`<div class="slide-item" style="position:relative;"><img src="${img}" style="width:100%; height:120px; object-fit:cover; border-radius:16px;">${isAuthorMode?`<button class="btn-icon" style="position:absolute; top:4px; right:4px;" data-remove-img="${i}"><i class="fas fa-trash"></i></button>`:''}</div>`).join('');
+            galleryDiv.querySelectorAll('[data-remove-img]').forEach(b=>b.addEventListener('click',()=>{if(!isAuthorMode)return;appData.homeImages.splice(b.dataset.removeImg,1);renderHome();}));
             const charContainer = document.getElementById('characterList');
-            charContainer.innerHTML = appData.characters.map(c => `
-                <div class="card">
-                    <div style="display:flex; align-items:center; gap:12px; padding:16px 12px 0 12px;">
-                        <img src="${c.avatar}" style="width:50px; height:50px; border-radius:50%; object-fit:cover;">
-                        <div><strong>${escapeHtml(c.name)}</strong><br><span class="tag">${escapeHtml(c.job)}</span></div>
-                    </div>
-                    <div style="padding:12px;"><i class="fas fa-map-pin"></i> ${escapeHtml(c.region)}<br><small>📖 ${escapeHtml(c.backstory?.substring(0,40)||'')}…</small></div>
-                    <div style="padding:0 12px 12px 12px; display:flex; gap:8px;">
-                        <button class="btn-icon view-char" data-id="${c.id}"><i class="fas fa-eye"></i> 详情</button>
-                        ${isAuthorMode ? `<button class="btn-icon edit-char" data-id="${c.id}"><i class="fas fa-edit"></i></button><button class="btn-icon del-char" data-id="${c.id}"><i class="fas fa-trash"></i></button>` : ''}
-                    </div>
-                </div>
-            `).join('');
-            document.querySelectorAll('.view-char').forEach(btn => btn.addEventListener('click', () => showCharDetail(parseInt(btn.dataset.id))));
-            if(isAuthorMode) {
-                document.querySelectorAll('.edit-char').forEach(btn => btn.addEventListener('click', () => openCharForm(parseInt(btn.dataset.id))));
-                document.querySelectorAll('.del-char').forEach(btn => btn.addEventListener('click', () => { if(confirm('删除？')) { const id=parseInt(btn.dataset.id); appData.characters = appData.characters.filter(c=>c.id!==id); delete appData.nodePositions[id]; renderAll(); }}));
-            }
-            descInput.onblur = () => { if(isAuthorMode) { appData.homeDescription = descInput.value; saveToLocal(); } };
+            charContainer.innerHTML = appData.characters.map(c=>`<div class="card"><div style="display:flex; align-items:center; gap:12px; padding:16px 12px 0 12px;"><img src="${c.avatar}" style="width:50px; height:50px; border-radius:50%;"><div><strong>${escapeHtml(c.name)}</strong><br><span class="tag">${escapeHtml(c.job)}</span></div></div><div style="padding:12px;"><i class="fas fa-map-pin"></i> ${escapeHtml(c.region)}<br><small>📖 ${escapeHtml(c.backstory?.substring(0,40)||'')}…</small></div><div style="padding:0 12px 12px 12px; display:flex; gap:8px;"><button class="btn-icon view-char" data-id="${c.id}"><i class="fas fa-eye"></i> 详情</button>${isAuthorMode?`<button class="btn-icon edit-char" data-id="${c.id}"><i class="fas fa-edit"></i></button><button class="btn-icon del-char" data-id="${c.id}"><i class="fas fa-trash"></i></button>`:''}</div></div>`).join('');
+            document.querySelectorAll('.view-char').forEach(b=>b.addEventListener('click',()=>showCharDetail(parseInt(b.dataset.id))));
+            if(isAuthorMode){ document.querySelectorAll('.edit-char').forEach(b=>b.addEventListener('click',()=>openCharForm(parseInt(b.dataset.id)))); document.querySelectorAll('.del-char').forEach(b=>b.addEventListener('click',()=>{if(confirm('删除？')){const id=parseInt(b.dataset.id); appData.characters=appData.characters.filter(c=>c.id!==id); delete appData.nodePositions[id]; renderAll();}})); }
+            descInput.onblur = () => { if(isAuthorMode){ appData.homeDescription = descInput.value; saveToLocal(); } };
         }
 
         function showCharDetail(id) { 
             const c = appData.characters.find(c=>c.id===id); if(!c) return;
-            const galleryHtml = (c.gallery || []).map(item => `
-                <div class="gallery-item" data-lightbox-img="${item.imageUrl}">
-                    <img src="${item.imageUrl}" onerror="this.src='https://picsum.photos/200/150'">
-                    <div class="gallery-title">${escapeHtml(item.title || '')}</div>
-                </div>
-            `).join('');
+            const galleryHtml = (c.gallery || []).map(item => `<div class="gallery-item" data-lightbox-img="${item.imageUrl}"><img src="${item.imageUrl}" onerror="this.src='https://picsum.photos/200/150'"><div class="gallery-title">${escapeHtml(item.title||'')}</div></div>`).join('');
             document.getElementById('modalContent').innerHTML = `
-                <div style="text-align:center;">
-                    <img src="${c.avatar}" style="width:80px;border-radius:50%;"><h2>${escapeHtml(c.name)}</h2>
-                    <p>⚔️ ${escapeHtml(c.job)} &nbsp; 📍 ${escapeHtml(c.region)}</p><hr>
-                    <img src="${c.standee}" style="max-width:100%; border-radius:24px; max-height:250px;">
-                    <p><strong>背景故事</strong><br>${escapeHtml(c.backstory)}</p>
-                    ${galleryHtml ? `<hr><h4>🖼️ 图集</h4><div class="slide-row" style="justify-content:center;">${galleryHtml}</div>` : ''}
-                    <button class="btn-primary" onclick="closeModal()" style="margin-top:16px;">关闭</button>
-                </div>
-            `;
+                <div style="text-align:center;"><img src="${c.avatar}" style="width:80px;border-radius:50%;"><h2>${escapeHtml(c.name)}</h2><p>⚔️ ${escapeHtml(c.job)} &nbsp; 📍 ${escapeHtml(c.region)}</p><hr>
+                <img src="${c.standee}" style="max-width:100%; border-radius:24px; max-height:250px;"><p><strong>背景故事</strong><br>${escapeHtml(c.backstory)}</p>
+                ${galleryHtml ? `<hr><h4>🖼️ 图集</h4><div class="slide-row" style="justify-content:center;">${galleryHtml}</div>` : ''}
+                <button class="btn-primary" onclick="closeModal()" style="margin-top:16px;">关闭</button></div>`;
             openModal();
-            document.querySelectorAll('[data-lightbox-img]').forEach(el => {
-                el.addEventListener('click', (e) => {
-                    if(e.target.closest('img')) {
-                        document.getElementById('lightboxImg').src = el.dataset.lightboxImg;
-                        document.getElementById('lightboxModal').style.display = 'flex';
-                    }
-                });
-            });
+            document.querySelectorAll('[data-lightbox-img]').forEach(el => { el.addEventListener('click', (e) => { if(e.target.closest('img')) { document.getElementById('lightboxImg').src = el.dataset.lightboxImg; document.getElementById('lightboxModal').style.display = 'flex'; } }); });
         }
 
         function openCharForm(id=null) {
@@ -1165,8 +1044,7 @@
             let char = isEdit ? appData.characters.find(c=>c.id===id) : { name:'', avatar:'', job:'', region:'', standee:'', backstory:'', gallery:[] };
             let tempGallery = [...(char.gallery || [])];
             function renderGM() {
-                const ctn = document.getElementById('galleryManagerList');
-                if(!ctn) return;
+                const ctn = document.getElementById('galleryManagerList'); if(!ctn) return;
                 ctn.innerHTML = tempGallery.map((item, idx) => `
                     <div class="gallery-manager-item"><img src="${item.imageUrl}"><input value="${escapeHtml(item.title)}" data-idx="${idx}" class="gallery-title-input" style="flex:1; padding:6px;"><button class="btn-icon" data-del-gallery="${idx}"><i class="fas fa-trash"></i></button></div>
                 `).join('');
@@ -1181,8 +1059,7 @@
                 <textarea id="charStory">${escapeHtml(char.backstory)}</textarea>
                 <hr><strong>🖼️ 小图集</strong> <button id="addGalleryItemBtn">添加图片</button><div id="galleryManagerList"></div>
                 <button class="btn-primary" id="saveCharBtn">保存</button>`;
-            openModal();
-            renderGM();
+            openModal(); renderGM();
             document.getElementById('uploadAvatarBtn').onclick = () => triggerImageUpload(b64=>{ document.getElementById('charAvatar').value=b64; document.getElementById('avatarPreview').innerHTML=`<img src="${b64}" style="max-width:80px;">`; });
             document.getElementById('uploadStandeeBtn').onclick = () => triggerImageUpload(b64=>{ document.getElementById('charStandee').value=b64; document.getElementById('standeePreview').innerHTML=`<img src="${b64}" style="max-width:100px;">`; });
             document.getElementById('addGalleryItemBtn').onclick = () => { triggerImageUpload(b64 => { tempGallery.push({ imageUrl: b64, title: '' }); renderGM(); }); };
@@ -1196,67 +1073,39 @@
 
         function editRegion(id) {
             if(!requireAuthor()) return;
-            const region = appData.regions.find(r => r.id === id);
-            if(!region) return;
+            const region = appData.regions.find(r => r.id === id); if(!region) return;
             let tempCover = region.cover;
             const modalContent = document.getElementById('modalContent');
-            modalContent.innerHTML = `
-                <h3>编辑地域</h3>
+            modalContent.innerHTML = `<h3>编辑地域</h3>
                 <input id="regName" placeholder="地域名称" value="${escapeHtml(region.name)}" style="width:100%; margin:6px 0; padding:8px; border-radius:20px; border:1px solid #cde0be;">
                 <textarea id="regDesc" placeholder="描述" rows="3" style="width:100%; margin:6px 0; padding:8px; border-radius:20px; border:1px solid #cde0be;">${escapeHtml(region.description)}</textarea>
                 <div>封面图片 <button type="button" class="btn-icon" id="uploadRegionCoverBtn"><i class="fas fa-upload"></i> 上传</button>
-                <input type="hidden" id="regCover" value="${escapeHtml(tempCover)}">
-                <div id="regionCoverPreview">${tempCover ? `<img src="${tempCover}" style="max-width:100px; border-radius:12px;">` : ''}</div></div>
-                <button class="btn-primary" id="saveRegionBtn" style="margin-top:16px;">保存</button>
-            `;
+                <input type="hidden" id="regCover" value="${escapeHtml(tempCover)}"><div id="regionCoverPreview">${tempCover ? `<img src="${tempCover}" style="max-width:100px; border-radius:12px;">` : ''}</div></div>
+                <button class="btn-primary" id="saveRegionBtn" style="margin-top:16px;">保存</button>`;
             openModal();
-            document.getElementById('uploadRegionCoverBtn').onclick = () => {
-                triggerImageUpload((base64) => {
-                    document.getElementById('regCover').value = base64;
-                    document.getElementById('regionCoverPreview').innerHTML = `<img src="${base64}" style="max-width:100px; border-radius:12px;">`;
-                });
-            };
+            document.getElementById('uploadRegionCoverBtn').onclick = () => { triggerImageUpload((base64) => { document.getElementById('regCover').value = base64; document.getElementById('regionCoverPreview').innerHTML = `<img src="${base64}" style="max-width:100px; border-radius:12px;">`; }); };
             document.getElementById('saveRegionBtn').onclick = () => {
-                region.name = document.getElementById('regName').value.trim();
-                region.description = document.getElementById('regDesc').value.trim();
-                region.cover = document.getElementById('regCover').value;
-                if(!region.name) { alert('名称不能为空'); return; }
-                closeModal();
-                renderWorld();
-                saveToLocal();
+                region.name = document.getElementById('regName').value.trim(); region.description = document.getElementById('regDesc').value.trim(); region.cover = document.getElementById('regCover').value;
+                if(!region.name) { alert('名称不能为空'); return; } closeModal(); renderWorld(); saveToLocal();
             };
         }
 
         function editGroup(id) {
             if(!requireAuthor()) return;
-            const group = appData.groups.find(g => g.id === id);
-            if(!group) return;
+            const group = appData.groups.find(g => g.id === id); if(!group) return;
             let tempCover = group.coverImg || '';
             const modalContent = document.getElementById('modalContent');
-            modalContent.innerHTML = `
-                <h3>编辑团体</h3>
+            modalContent.innerHTML = `<h3>编辑团体</h3>
                 <input id="groupName" placeholder="团体名称" value="${escapeHtml(group.name)}" style="width:100%; margin:6px 0; padding:8px; border-radius:20px; border:1px solid #cde0be;">
                 <textarea id="groupDesc" placeholder="描述" rows="3" style="width:100%; margin:6px 0; padding:8px; border-radius:20px; border:1px solid #cde0be;">${escapeHtml(group.description)}</textarea>
                 <div>封面图片 <button type="button" class="btn-icon" id="uploadGroupCoverBtn"><i class="fas fa-upload"></i> 上传</button>
-                <input type="hidden" id="groupCover" value="${escapeHtml(tempCover)}">
-                <div id="groupCoverPreview">${tempCover ? `<img src="${tempCover}" style="max-width:100px; border-radius:12px;">` : ''}</div></div>
-                <button class="btn-primary" id="saveGroupBtn" style="margin-top:16px;">保存</button>
-            `;
+                <input type="hidden" id="groupCover" value="${escapeHtml(tempCover)}"><div id="groupCoverPreview">${tempCover ? `<img src="${tempCover}" style="max-width:100px; border-radius:12px;">` : ''}</div></div>
+                <button class="btn-primary" id="saveGroupBtn" style="margin-top:16px;">保存</button>`;
             openModal();
-            document.getElementById('uploadGroupCoverBtn').onclick = () => {
-                triggerImageUpload((base64) => {
-                    document.getElementById('groupCover').value = base64;
-                    document.getElementById('groupCoverPreview').innerHTML = `<img src="${base64}" style="max-width:100px; border-radius:12px;">`;
-                });
-            };
+            document.getElementById('uploadGroupCoverBtn').onclick = () => { triggerImageUpload((base64) => { document.getElementById('groupCover').value = base64; document.getElementById('groupCoverPreview').innerHTML = `<img src="${base64}" style="max-width:100px; border-radius:12px;">`; }); };
             document.getElementById('saveGroupBtn').onclick = () => {
-                group.name = document.getElementById('groupName').value.trim();
-                group.description = document.getElementById('groupDesc').value.trim();
-                group.coverImg = document.getElementById('groupCover').value;
-                if(!group.name) { alert('名称不能为空'); return; }
-                closeModal();
-                renderRelation();
-                saveToLocal();
+                group.name = document.getElementById('groupName').value.trim(); group.description = document.getElementById('groupDesc').value.trim(); group.coverImg = document.getElementById('groupCover').value;
+                if(!group.name) { alert('名称不能为空'); return; } closeModal(); renderRelation(); saveToLocal();
             };
         }
 
@@ -1271,9 +1120,7 @@
                 <hr><strong>📸 地域帖子</strong><div id="regionPosts-${region.id}" class="scroll-x"></div>${isAuthorMode?`<button class="btn-icon newRegionPostBtn" data-id="${region.id}">➕ 新建</button>`:''}`;
                 container.appendChild(div);
                 const residentDiv = div.querySelector(`#residents-${region.id}`);
-                residentDiv.innerHTML = (region.residents || []).map(rid => appData.characters.find(c=>c.id===rid)).filter(Boolean).map(ch => `
-                    <div class="resident-item"><img src="${ch.avatar}" onerror="this.src='https://picsum.photos/48/48'"><span>${escapeHtml(ch.name)}</span>${isAuthorMode?`<span class="remove-btn removeResi" data-reg="${region.id}" data-rid="${ch.id}">✖</span>`:''}</div>
-                `).join('');
+                residentDiv.innerHTML = (region.residents || []).map(rid => appData.characters.find(c=>c.id===rid)).filter(Boolean).map(ch => `<div class="resident-item"><img src="${ch.avatar}" onerror="this.src='https://picsum.photos/48/48'"><span>${escapeHtml(ch.name)}</span>${isAuthorMode?`<span class="remove-btn removeResi" data-reg="${region.id}" data-rid="${ch.id}">✖</span>`:''}</div>`).join('');
                 const postContainer = div.querySelector(`#regionPosts-${region.id}`);
                 postContainer.innerHTML = posts.map(p => `<div class="post-preview" data-regid="${region.id}" data-postid="${p.id}"><img src="${p.coverImg}" onerror="this.src='https://picsum.photos/200/150'"><div>${escapeHtml(p.title)}</div>${isAuthorMode?`<button class="delete-post-btn" data-regid="${region.id}" data-postid="${p.id}"><i class="fas fa-trash"></i></button>`:''}</div>`).join('');
                 if(isAuthorMode) {
@@ -1293,10 +1140,8 @@
             const region = appData.regions.find(r=>r.id===regionId);
             const available = appData.characters.filter(c => !(region.residents||[]).includes(c.id));
             if(!available.length) { alert('无可选人设'); return; }
-            let html = `<h3>选择居民</h3><div>`;
-            available.forEach(c => { html += `<div data-charid="${c.id}" style="display:flex; align-items:center; margin:8px; padding:6px; border-radius:30px; background:#f0f5ea; cursor:pointer;"><img src="${c.avatar}" style="width:40px; height:40px; border-radius:50%; margin-right:12px;"><span>${escapeHtml(c.name)} (${escapeHtml(c.job)})</span></div>`; });
-            html += `</div><button id="confirmAddResident" class="btn-primary">确认</button>`;
-            document.getElementById('modalContent').innerHTML = html; openModal();
+            let html = `<h3>选择居民</h3><div>`; available.forEach(c => { html += `<div data-charid="${c.id}" style="display:flex; align-items:center; margin:8px; padding:6px; border-radius:30px; background:#f0f5ea; cursor:pointer;"><img src="${c.avatar}" style="width:40px; height:40px; border-radius:50%; margin-right:12px;"><span>${escapeHtml(c.name)} (${escapeHtml(c.job)})</span></div>`; });
+            html += `</div><button id="confirmAddResident" class="btn-primary">确认</button>`; document.getElementById('modalContent').innerHTML = html; openModal();
             let sel = null;
             document.querySelectorAll('[data-charid]').forEach(el => el.addEventListener('click', () => { document.querySelectorAll('[data-charid]').forEach(e=>e.style.background='#f0f5ea'); el.style.background='#cde2c1'; sel = parseInt(el.dataset.charid); }));
             document.getElementById('confirmAddResident').onclick = () => { if(sel) { if(!region.residents) region.residents = []; if(!region.residents.includes(sel)) region.residents.push(sel); closeModal(); renderWorld(); saveToLocal(); } };
@@ -1335,8 +1180,7 @@
             const available = appData.characters.filter(c => !(group.members||[]).includes(c.id));
             if(!available.length) { alert('无可选成员'); return; }
             let html = `<h3>选择成员</h3><div>`; available.forEach(c => { html += `<div data-charid="${c.id}" style="display:flex; align-items:center; margin:8px; padding:6px; border-radius:30px; background:#f0f5ea; cursor:pointer;"><img src="${c.avatar}" style="width:40px; height:40px; border-radius:50%; margin-right:12px;"><span>${escapeHtml(c.name)}</span></div>`; });
-            html += `</div><button id="confirmAddMember" class="btn-primary">确认</button>`;
-            document.getElementById('modalContent').innerHTML = html; openModal();
+            html += `</div><button id="confirmAddMember" class="btn-primary">确认</button>`; document.getElementById('modalContent').innerHTML = html; openModal();
             let sel = null;
             document.querySelectorAll('[data-charid]').forEach(el => el.addEventListener('click', () => { document.querySelectorAll('[data-charid]').forEach(e=>e.style.background='#f0f5ea'); el.style.background='#cde2c1'; sel = parseInt(el.dataset.charid); }));
             document.getElementById('confirmAddMember').onclick = () => { if(sel) { if(!group.members) group.members = []; if(!group.members.includes(sel)) group.members.push(sel); closeModal(); renderRelation(); saveToLocal(); } };
@@ -1344,15 +1188,9 @@
 
         function renderPlayground() {
             const grid = document.getElementById('playItemsGrid'); if(!grid) return;
-            let filtered = appData.playItems;
-            if(currentPlayFilter !== "all") filtered = appData.playItems.filter(item => item.type === currentPlayFilter);
-            grid.innerHTML = filtered.map(item => `
-                <div class="card"><img class="card-img" src="${item.imageUrl || 'https://picsum.photos/300/200'}"><div class="card-content"><div class="card-title">${escapeHtml(item.title)}</div><div class="card-tag"><i class="fas ${item.type==='game'?'fa-gamepad':'fa-video'}"></i> ${item.type==='game'?'游戏':'视频'}</div><div class="card-desc">${escapeHtml(item.description||'')}</div><div class="card-actions"><a href="${escapeHtml(item.linkUrl)}" target="_blank" class="btn-primary">${item.type==='game'?'🎮 游玩':'▶ 观看'}</a>${isAuthorMode?`<div><button class="btn-icon edit-play" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="btn-icon del-play" data-id="${item.id}"><i class="fas fa-trash"></i></button></div>`:''}</div></div></div>
-            `).join('');
-            if(isAuthorMode) {
-                document.querySelectorAll('.edit-play').forEach(btn => btn.addEventListener('click', () => openPlayItemForm(parseInt(btn.dataset.id))));
-                document.querySelectorAll('.del-play').forEach(btn => btn.addEventListener('click', () => { if(confirm('删除？')) { appData.playItems = appData.playItems.filter(i=>i.id!==parseInt(btn.dataset.id)); renderPlayground(); saveToLocal(); }}));
-            }
+            let filtered = currentPlayFilter==='all'?appData.playItems:appData.playItems.filter(i=>i.type===currentPlayFilter);
+            grid.innerHTML = filtered.map(item=>`<div class="card"><img class="card-img" src="${item.imageUrl||'https://picsum.photos/300/200'}"><div class="card-content"><div class="card-title">${escapeHtml(item.title)}</div><div class="card-tag"><i class="fas ${item.type==='game'?'fa-gamepad':'fa-video'}"></i> ${item.type==='game'?'游戏':'视频'}</div><div class="card-desc">${escapeHtml(item.description||'')}</div><div class="card-actions"><a href="${escapeHtml(item.linkUrl)}" target="_blank" class="btn-primary">${item.type==='game'?'🎮 游玩':'▶ 观看'}</a>${isAuthorMode?`<div><button class="btn-icon edit-play" data-id="${item.id}"><i class="fas fa-edit"></i></button><button class="btn-icon del-play" data-id="${item.id}"><i class="fas fa-trash"></i></button></div>`:''}</div></div></div>`).join('');
+            if(isAuthorMode){ document.querySelectorAll('.edit-play').forEach(b=>b.addEventListener('click',()=>openPlayItemForm(parseInt(b.dataset.id)))); document.querySelectorAll('.del-play').forEach(b=>b.addEventListener('click',()=>{if(confirm('删除？')){appData.playItems=appData.playItems.filter(i=>i.id!==parseInt(b.dataset.id));renderPlayground();saveToLocal();}})); }
         }
 
         function openPlayItemForm(id=null) {
@@ -1360,34 +1198,19 @@
             const isEdit = id !== null;
             let item = isEdit ? appData.playItems.find(i => i.id === id) : { type: 'game', title: '', description: '', imageUrl: '', linkUrl: '' };
             const modalContent = document.getElementById('modalContent');
-            modalContent.innerHTML = `
-                <h3>${isEdit ? '编辑作品' : '添加作品'}</h3>
-                <select id="playType" style="width:100%; padding:8px; border-radius:20px; border:1px solid #cde0be;">
-                    <option value="game" ${item.type==='game'?'selected':''}>🎮 游戏</option>
-                    <option value="video" ${item.type==='video'?'selected':''}>🎬 视频</option>
-                </select>
+            modalContent.innerHTML = `<h3>${isEdit ? '编辑作品' : '添加作品'}</h3>
+                <select id="playType" style="width:100%; padding:8px; border-radius:20px; border:1px solid #cde0be;"><option value="game" ${item.type==='game'?'selected':''}>🎮 游戏</option><option value="video" ${item.type==='video'?'selected':''}>🎬 视频</option></select>
                 <input id="playTitle" placeholder="标题" value="${escapeHtml(item.title)}" style="width:100%; margin:6px 0; padding:8px;">
                 <textarea id="playDesc" placeholder="介绍" rows="3" style="width:100%; margin:6px 0; padding:8px;">${escapeHtml(item.description)}</textarea>
-                <div>封面 <button type="button" class="btn-icon" id="uploadPlayImageBtn"><i class="fas fa-upload"></i> 上传</button>
-                <input type="hidden" id="playImageUrl" value="${escapeHtml(item.imageUrl)}">
-                <div id="playImagePreview">${item.imageUrl ? `<img src="${item.imageUrl}" style="max-width:100px; border-radius:12px;">` : ''}</div></div>
+                <div>封面 <button type="button" class="btn-icon" id="uploadPlayImageBtn"><i class="fas fa-upload"></i> 上传</button><input type="hidden" id="playImageUrl" value="${escapeHtml(item.imageUrl)}"><div id="playImagePreview">${item.imageUrl ? `<img src="${item.imageUrl}" style="max-width:100px; border-radius:12px;">` : ''}</div></div>
                 <input id="playLink" placeholder="链接URL" value="${escapeHtml(item.linkUrl)}" style="width:100%; margin:6px 0; padding:8px;">
-                <button class="btn-primary" id="savePlayBtn">保存</button>
-            `;
+                <button class="btn-primary" id="savePlayBtn">保存</button>`;
             openModal();
             document.getElementById('uploadPlayImageBtn').onclick = () => triggerImageUpload((base64) => { document.getElementById('playImageUrl').value = base64; document.getElementById('playImagePreview').innerHTML = `<img src="${base64}" style="max-width:100px; border-radius:12px;">`; });
             document.getElementById('savePlayBtn').onclick = () => {
-                const newItem = {
-                    id: isEdit ? item.id : (nextId.play++),
-                    type: document.getElementById('playType').value,
-                    title: document.getElementById('playTitle').value,
-                    description: document.getElementById('playDesc').value,
-                    imageUrl: document.getElementById('playImageUrl').value,
-                    linkUrl: document.getElementById('playLink').value
-                };
+                const newItem = { id: isEdit ? item.id : (nextId.play++), type: document.getElementById('playType').value, title: document.getElementById('playTitle').value, description: document.getElementById('playDesc').value, imageUrl: document.getElementById('playImageUrl').value, linkUrl: document.getElementById('playLink').value };
                 if(!newItem.title.trim() || !newItem.linkUrl.trim()) { alert("标题和链接必填"); return; }
-                if(isEdit) { const idx = appData.playItems.findIndex(i=>i.id===id); appData.playItems[idx] = newItem; }
-                else appData.playItems.push(newItem);
+                if(isEdit) { const idx = appData.playItems.findIndex(i=>i.id===id); appData.playItems[idx] = newItem; } else appData.playItems.push(newItem);
                 closeModal(); renderPlayground(); saveToLocal();
             };
         }
@@ -1397,46 +1220,43 @@
         function escapeHtml(s) { return String(s).replace(/[&<>]/g, m => ({'&':'&amp;','<':'&lt;','>':'&gt;'})[m]); }
 
         // 事件绑定
-        document.querySelectorAll('.filter-chip').forEach(chip => chip.addEventListener('click', () => { document.querySelectorAll('.filter-chip').forEach(c=>c.classList.remove('active')); chip.classList.add('active'); currentPlayFilter = chip.dataset.filter; renderPlayground(); }));
-        document.getElementById('addHomeImageBtn').onclick = () => { if(requireAuthor()) triggerImageUpload(b64=>{ appData.homeImages.push(b64); renderHome(); }); };
-        document.getElementById('newCharacterBtn').onclick = () => openCharForm();
-        document.getElementById('newRegionBtn').onclick = () => { if(requireAuthor()) { const id = nextId.region++; appData.regions.push({ id, name:'新地域', cover:'', description:'...', residents:[] }); renderAll(); }};
-        document.getElementById('newGroupBtn').onclick = () => { if(requireAuthor()) { const id = nextId.group++; appData.groups.push({ id, name:'新团体', description:'', members:[] }); groupPosts[id]=[]; renderAll(); }};
-        document.getElementById('editRelationsBtn').onclick = () => { if(requireAuthor()) openRelationEditor(); };
-        document.getElementById('newPlayItemBtn').onclick = () => openPlayItemForm();
-        document.querySelectorAll('.nav-btn').forEach(btn => btn.addEventListener('click', () => { 
+        document.querySelectorAll('.filter-chip').forEach(c=>c.addEventListener('click',()=>{ document.querySelectorAll('.filter-chip').forEach(x=>x.classList.remove('active')); c.classList.add('active'); currentPlayFilter=c.dataset.filter; renderPlayground(); }));
+        document.getElementById('addHomeImageBtn').onclick = ()=> { if(requireAuthor()) triggerImageUpload(b64=>{ appData.homeImages.push(b64); renderHome(); }); };
+        document.getElementById('newCharacterBtn').onclick = ()=> openCharForm();
+        document.getElementById('newRegionBtn').onclick = ()=> { if(requireAuthor()) { const id=nextId.region++; appData.regions.push({id, name:'新地域', cover:'', description:'...', residents:[]}); renderAll(); }};
+        document.getElementById('newGroupBtn').onclick = ()=> { if(requireAuthor()) { const id=nextId.group++; appData.groups.push({id, name:'新团体', description:'', members:[]}); groupPosts[id]=[]; renderAll(); }};
+        document.getElementById('editRelationsBtn').onclick = ()=> { if(requireAuthor()) openRelationEditor(); };
+        document.getElementById('newPlayItemBtn').onclick = ()=> openPlayItemForm();
+        document.querySelectorAll('.nav-btn').forEach(b=>b.addEventListener('click',()=>{ 
             document.querySelectorAll('.page').forEach(p=>p.classList.remove('active-page')); 
-            document.getElementById(btn.dataset.page+'Page').classList.add('active-page');
-            document.querySelectorAll('.nav-btn').forEach(b=>b.classList.remove('active')); btn.classList.add('active');
-            if(btn.dataset.page === 'relation') setTimeout(() => { renderRelationMap(); }, 20);
+            document.getElementById(b.dataset.page+'Page').classList.add('active-page');
+            document.querySelectorAll('.nav-btn').forEach(x=>x.classList.remove('active')); b.classList.add('active');
+            if(b.dataset.page==='relation') setTimeout(()=>renderRelationMap(),20);
         }));
+        document.getElementById('resetRelationViewBtn').addEventListener('click', resetRelationView);
+        document.getElementById('exportDataBtn').addEventListener('click', exportData);
+        document.getElementById('importDataBtn').addEventListener('click', ()=>{
+            if(!requireAuthor()) return;
+            const input=document.createElement('input'); input.type='file'; input.accept='.json,application/json'; input.onchange=e=>{ if(e.target.files[0]) importData(e.target.files[0]); }; input.click();
+        });
 
         function openRelationEditor() {
             const chars = appData.characters; if(chars.length<2) { alert("至少两位角色"); return; }
             let html = `<h3>编辑关系</h3><div id="relList">`;
-            appData.relationships.forEach((rel,idx) => { const a=chars.find(c=>c.id===rel.from), b=chars.find(c=>c.id===rel.to); html+=`<div style="background:#f0f5ea; border-radius:20px; padding:8px; margin-bottom:8px; display:flex; justify-content:space-between;"><span><strong>${a?.name}</strong> → <strong>${b?.name}</strong> : ${escapeHtml(rel.relation)}</span><button class="btn-icon" data-del-rel="${idx}"><i class="fas fa-trash"></i></button></div>`; });
+            appData.relationships.forEach((rel,idx)=>{ const a=chars.find(c=>c.id===rel.from), b=chars.find(c=>c.id===rel.to); html+=`<div style="background:#f0f5ea; border-radius:20px; padding:8px; margin-bottom:8px; display:flex; justify-content:space-between;"><span><strong>${a?.name}</strong> → <strong>${b?.name}</strong> : ${escapeHtml(rel.relation)}</span><button class="btn-icon" data-del-rel="${idx}"><i class="fas fa-trash"></i></button></div>`; });
             html+=`</div><hr><select id="relFrom">${chars.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select><select id="relTo">${chars.map(c=>`<option value="${c.id}">${c.name}</option>`).join('')}</select><input id="relDesc" placeholder="关系描述"><button id="addRelationBtn" class="btn-primary">添加</button><button id="closeRelBtn" class="btn-primary" style="background:#aaa;">关闭</button>`;
-            document.getElementById('modalContent').innerHTML=html; openModal();
-            document.querySelectorAll('[data-del-rel]').forEach(btn => btn.addEventListener('click', () => { appData.relationships.splice(btn.dataset.delRel,1); openRelationEditor(); renderRelationMap(); }));
-            document.getElementById('addRelationBtn').onclick = () => { const f=parseInt(document.getElementById('relFrom').value), t=parseInt(document.getElementById('relTo').value), d=document.getElementById('relDesc').value.trim(); if(f===t) { alert('不同角色'); return; } if(!d) { alert('填写描述'); return; } appData.relationships.push({from:f,to:t,relation:d}); saveToLocal(); openRelationEditor(); renderRelationMap(); };
-            document.getElementById('closeRelBtn').onclick = () => { closeModal(); renderRelationMap(); };
+            document.getElementById('modalContent').innerHTML = html; openModal();
+            document.querySelectorAll('[data-del-rel]').forEach(b=>b.addEventListener('click',()=>{ appData.relationships.splice(b.dataset.delRel,1); openRelationEditor(); renderRelationMap(); }));
+            document.getElementById('addRelationBtn').onclick = ()=>{
+                const f=parseInt(document.getElementById('relFrom').value), t=parseInt(document.getElementById('relTo').value), d=document.getElementById('relDesc').value.trim();
+                if(f===t) { alert('不同角色'); return; } if(!d) { alert('填写描述'); return; }
+                appData.relationships.push({from:f,to:t,relation:d}); saveToLocal(); openRelationEditor(); renderRelationMap();
+            };
+            document.getElementById('closeRelBtn').onclick = ()=>{ closeModal(); renderRelationMap(); };
         }
 
-        // 导出导入按钮
-        document.getElementById('exportDataBtn').addEventListener('click', exportData);
-        document.getElementById('importDataBtn').addEventListener('click', () => {
-            if (!requireAuthor()) return;
-            const input = document.createElement('input');
-            input.type = 'file';
-            input.accept = '.json,application/json';
-            input.onchange = (e) => { if(e.target.files[0]) importData(e.target.files[0]); };
-            input.click();
-        });
-
-        // 启动：优先远程加载数据（用于 GitHub Pages），失败则读取 localStorage
         loadRemoteData();
-        isAuthorMode = false;
-        updateModeUI();
+        isAuthorMode = false; updateModeUI();
         document.getElementById('lightboxModal').addEventListener('click', function(e) { if(e.target === this) this.style.display = 'none'; });
     })();
 </script>
